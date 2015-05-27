@@ -1,4 +1,5 @@
 {
+  "source" : "demoNginx",
   "pollInterval" : 1000,
   "url" : "http://demo.nginx.com/status"
 }

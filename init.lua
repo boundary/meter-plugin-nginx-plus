@@ -100,11 +100,19 @@ function plugin:onParseValues(data)
         local bypassed = tonumber(cache['miss']['bytes'])+tonumber(cache['expired']['bytes'])+tonumber(cache['bypass']['bytes'])
         table.insert(metrics, pack('NGINX_PLUS_CACHE_COLD', cache['cold'] and 1 or 0, nil, src))
         table.insert(metrics, pack('NGINX_PLUS_CACHE_SIZE', cache['size'], nil, src))
-        table.insert(metrics, pack('NGINX_PLUS_CACHE_USED', cache['size']/cache['max_size'], nil, src))
+        if tonumber(cache['max_size']) == 0 then
+          table.insert(metrics, pack('NGINX_PLUS_CACHE_USED', 0, nil, src))
+        else
+          table.insert(metrics, pack('NGINX_PLUS_CACHE_USED', tonumber(cache['size'])/tonumber(cache['max_size']), nil, src))
+        end
         table.insert(metrics, pack('NGINX_PLUS_CACHE_SERVED', served, nil, src))
         table.insert(metrics, pack('NGINX_PLUS_CACHE_WRITTEN', tonumber(cache['miss']['bytes_written'])+tonumber(cache['expired']['bytes_written'])+tonumber(cache['bypass']['bytes_written']), nil, src))
         table.insert(metrics, pack('NGINX_PLUS_CACHE_BYPASSED', bypassed, nil, src))
-        table.insert(metrics, pack('NGINX_PLUS_CACHE_HIT_PERCENT', served/(served+bypassed), nil, src))
+        if served+bypassed == 0 then
+          table.insert(metrics, pack('NGINX_PLUS_CACHE_HIT_PERCENT', 0, nil, src))
+        else
+          table.insert(metrics, pack('NGINX_PLUS_CACHE_HIT_PERCENT', served/(served+bypassed), nil, src))
+        end
       end
     end
     for zone_name, zone in pairs(stats.server_zones) do
@@ -136,12 +144,20 @@ function plugin:onParseValues(data)
           table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_5XX_RESPONSES', acc:accumulate('responses_' .. upstream_name, upstream['responses']['5xx']), nil, src))
           table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_TOTAL_RESPONSES', acc:accumulate('responses_' .. upstream_name, upstream['responses']['total']), nil, src))
           table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_ACTIVE_CONNECTIONS', upstream['active'], nil, src))
-          table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_PERC_USED_CONNECTIONS', (upstream['max_conns'] and tonumber(upstream['max_conns']) > 0) and tonumber(upstream['active'])/tonumber(upstream['max_conns']) or 0, nil, src))
+          if upstream['max_conns'] and tonumber(upstream['max_conns']) > 0 then
+            table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_PERC_USED_CONNECTIONS', tonumber(upstream['active'])/tonumber(upstream['max_conns']), nil, src))
+          else
+            table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_PERC_USED_CONNECTIONS', 0, nil, src))
+          end
           table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_TRAFFIC_SENT', acc:accumulate('traffic_sent_' .. upstream_name, upstream['sent']), nil, src))
           table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_TRAFFIC_RECEIVED', acc:accumulate('traffic_received_' .. upstream_name, upstream['received']), nil, src))
           table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_FAILED_CHECKS', upstream['fails'], nil, src))
           table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_DOWNTIME', upstream['downtime'], nil, src))
-          table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_PERC_FAILED', tonumber(upstream['health_checks']['fails'])/tonumber(upstream['health_checks']['checks']), nil, src))
+          if upstream['health_checks']['checks'] and tonumber(upstream['health_checks']['checks']) > 0 then
+            table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_PERC_FAILED', tonumber(upstream['health_checks']['fails'])/tonumber(upstream['health_checks']['checks']), nil, src))
+          else
+            table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_PERC_FAILED', 0, nil, src))
+          end
           table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_HEALTHY', upstream['health_checks']['last_passed'] and 1 or 0, nil, src))
         end
       end
@@ -163,12 +179,20 @@ function plugin:onParseValues(data)
           table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_STATE', (string.upper(TCP_upstream['state']) == 'UP' and 0) or (string.upper(TCP_upstream['state']) == 'DRAINING' and 1) or (string.upper(TCP_upstream['state']) == 'DOWN' and 2) or (string.upper(TCP_upstream['state']) == 'UNAVAIL' and 3) or (string.upper(TCP_upstream['state']) == 'UNHEALTHY' and 4) or 5, nil, src))
           table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_CONNECTIONS', acc:accumulate('connections_' .. TCP_upstream_name, TCP_upstream['connections']), nil, src))
           table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_ACTIVE_CONNECTIONS', TCP_upstream['active'], nil, src))
-          table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_PERC_USED_CONNECTIONS', (TCP_upstream['max_conns'] and tonumber(TCP_upstream['max_conns']) > 0) and tonumber(TCP_upstream['active'])/tonumber(TCP_upstream['max_conns']) or 0, nil, src))
+          if TCP_upstream['max_conns'] and tonumber(TCP_upstream['max_conns']) > 0 then
+            table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_PERC_USED_CONNECTIONS', tonumber(TCP_upstream['active'])/tonumber(TCP_upstream['max_conns']), nil, src))
+          else
+            table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_PERC_USED_CONNECTIONS', 0, nil, src))
+          end
           table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_TRAFFIC_SENT', acc:accumulate('traffic_sent_' .. TCP_upstream_name, TCP_upstream['sent']), nil, src))
           table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_TRAFFIC_RECEIVED', acc:accumulate('traffic_received_' .. TCP_upstream_name, TCP_upstream['received']), nil, src))
           table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_FAILED_CHECKS', TCP_upstream['fails'], nil, src))
           table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_DOWNTIME', TCP_upstream['downtime'], nil, src))
-          table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_PERC_FAILED', tonumber(TCP_upstream['health_checks']['fails'])/tonumber(TCP_upstream['health_checks']['checks']), nil, src))
+          if TCP_upstream['health_checks']['checks'] and tonumber(TCP_upstream['health_checks']['checks']) > 0 then
+            table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_PERC_FAILED', tonumber(TCP_upstream['health_checks']['fails'])/tonumber(TCP_upstream['health_checks']['checks']), nil, src))
+          else
+            table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_PERC_FAILED', 0, nil, src))
+          end
           table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_HEALTHY', TCP_upstream['health_checks']['last_passed'] and 1 or 0, nil, src))
           if TCP_upstream['connect_time'] then
             table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_CONNECT_TIME', TCP_upstream['connect_time'], nil, src))
