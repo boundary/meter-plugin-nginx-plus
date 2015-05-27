@@ -1,0 +1,177 @@
+{
+  "description": "Boundary Nginx Plus Plugin - Displays important nginx plus metrics",
+  "icon" : "icon.png",
+  "command" : "boundary-meter init.lua",
+  "command_lua" : "boundary-meter init.lua",
+  "postExtract" : "",
+  "postExtract_lua" : "",
+  "ignore" : "",
+
+  "metrics" : [
+    "NGINX_PLUS_ACTIVE_CONNECTIONS",
+    "NGINX_PLUS_WAITING",
+    "NGINX_PLUS_HANDLED",
+    "NGINX_PLUS_NOT_HANDLED",
+    "NGINX_PLUS_REQUESTS",
+    "NGINX_PLUS_CURRENT_REQUESTS",
+    "NGINX_PLUS_REQUESTS_PER_CONNECTION",
+    "NGINX_PLUS_UPTIME",
+    "NGINX_PLUS_CACHE_COLD",
+    "NGINX_PLUS_CACHE_SIZE",
+    "NGINX_PLUS_CACHE_USED",
+    "NGINX_PLUS_CACHE_SERVED",
+    "NGINX_PLUS_CACHE_WRITTEN",
+    "NGINX_PLUS_CACHE_BYPASSED",
+    "NGINX_PLUS_CACHE_HIT_PERCENT",
+    "NGINX_PLUS_ZONE_CURRENT_REQUESTS",
+    "NGINX_PLUS_ZONE_REQUESTS",
+    "NGINX_PLUS_ZONE_1XX_RESPONSES",
+    "NGINX_PLUS_ZONE_2XX_RESPONSES",
+    "NGINX_PLUS_ZONE_3XX_RESPONSES",
+    "NGINX_PLUS_ZONE_4XX_RESPONSES",
+    "NGINX_PLUS_ZONE_5XX_RESPONSES",
+    "NGINX_PLUS_ZONE_TOTAL_RESPONSES",
+    "NGINX_PLUS_ZONE_TRAFFIC_SENT",
+    "NGINX_PLUS_ZONE_TRAFFIC_RECEIVED",
+    "NGINX_PLUS_UPSTREAM_STATE",
+    "NGINX_PLUS_UPSTREAM_REQUESTS",
+    "NGINX_PLUS_UPSTREAM_1XX_RESPONSES",
+    "NGINX_PLUS_UPSTREAM_2XX_RESPONSES",
+    "NGINX_PLUS_UPSTREAM_3XX_RESPONSES",
+    "NGINX_PLUS_UPSTREAM_4XX_RESPONSES",
+    "NGINX_PLUS_UPSTREAM_5XX_RESPONSES",
+    "NGINX_PLUS_UPSTREAM_TOTAL_RESPONSES",
+    "NGINX_PLUS_UPSTREAM_ACTIVE_CONNECTIONS",
+    "NGINX_PLUS_UPSTREAM_PERC_USED_CONNECTIONS",
+    "NGINX_PLUS_UPSTREAM_TRAFFIC_SENT",
+    "NGINX_PLUS_UPSTREAM_TRAFFIC_RECEIVED",
+    "NGINX_PLUS_UPSTREAM_FAILED_CHECKS",
+    "NGINX_PLUS_UPSTREAM_DOWNTIME",
+    "NGINX_PLUS_UPSTREAM_PERC_FAILED",
+    "NGINX_PLUS_UPSTREAM_HEALTHY",
+    "NGINX_PLUS_TCPZONE_CURRENT_CONNECTIONS",
+    "NGINX_PLUS_TCPZONE_CONNECTIONS",
+    "NGINX_PLUS_TCPZONE_TRAFFIC_SENT",
+    "NGINX_PLUS_TCPZONE_TRAFFIC_RECEIVED",
+    "NGINX_PLUS_TCPUPSTREAM_STATE",
+    "NGINX_PLUS_TCPUPSTREAM_CONNECTIONS",
+    "NGINX_PLUS_TCPUPSTREAM_ACTIVE_CONNECTIONS",
+    "NGINX_PLUS_TCPUPSTREAM_PERC_USED_CONNECTIONS",
+    "NGINX_PLUS_TCPUPSTREAM_TRAFFIC_SENT",
+    "NGINX_PLUS_TCPUPSTREAM_TRAFFIC_RECEIVED",
+    "NGINX_PLUS_TCPUPSTREAM_FAILED_CHECKS",
+    "NGINX_PLUS_TCPUPSTREAM_DOWNTIME",
+    "NGINX_PLUS_TCPUPSTREAM_PERC_FAILED",
+    "NGINX_PLUS_TCPUPSTREAM_HEALTHY",
+    "NGINX_PLUS_TCPUPSTREAM_CONNECT_TIME",
+    "NGINX_PLUS_TCPUPSTREAM_FIRST_BYTE_TIME",
+    "NGINX_PLUS_TCPUPSTREAM_RESPONSE_TIME"
+  ],
+
+  "dashboards" : [
+    {
+      "name" : "Nginx Plus Summary",
+      "layout" : "d-w=3&d-h=2&d-pad=5&d-bg=none&d-g-NGINX_PLUS_UPTIME=0-0-1-1&d-g-NGINX_PLUS_CURRENT_REQUESTS=1-0-1-1&d-g-NGINX_PLUS_REQUESTS_PER_CONNECTION=2-0-1-1-b&d-g-NGINX_PLUS_REQUESTS=2-0-1-1-t&d-g-NGINX_PLUS_HANDLED=0-1-1-1&d-g-NGINX_PLUS_NOT_HANDLED=0-1-1-1-b&d-g-NGINX_PLUS_ACTIVE_CONNECTIONS=1-1-1-1-t&d-g-NGINX_PLUS_WAITING=2-1-1-1"
+    },
+    {
+      "name" : "Nginx Plus Zones",
+      "layout" : "d-w=3&d-h=3&d-pad=5&d-bg=none&d-g-NGINX_PLUS_ZONE_CURRENT_REQUESTS=0-0-1-1&d-g-NGINX_PLUS_ZONE_REQUESTS=1-0-1-1&d-g-NGINX_PLUS_ZONE_TOTAL_RESPONSES=0-1-1-1-t&d-g-NGINX_PLUS_ZONE_2XX_RESPONSES=0-1-1-1-b&d-g-NGINX_PLUS_ZONE_4XX_RESPONSES=1-1-1-1-t&d-g-NGINX_PLUS_ZONE_5XX_RESPONSES=1-1-1-1-b&d-g-NGINX_PLUS_ZONE_1XX_RESPONSES=2-1-1-1-t&d-g-NGINX_PLUS_ZONE_3XX_RESPONSES=2-1-1-1-b&d-g-NGINX_PLUS_ZONE_TRAFFIC_SENT=0-2-1-1&d-g-NGINX_PLUS_ZONE_TRAFFIC_RECEIVED=1-2-1-1"
+    },
+    {
+      "name" : "Nginx Plus Upstreams",
+      "layout" : "d-w=3&d-h=6&d-pad=5&d-bg=none&d-g-NGINX_PLUS_UPSTREAM_STATE=0-0-1-1&d-g-NGINX_PLUS_UPSTREAM_REQUESTS=1-0-1-1&d-g-NGINX_PLUS_UPSTREAM_TOTAL_RESPONSES=0-1-1-1-t&d-g-NGINX_PLUS_UPSTREAM_2XX_RESPONSES=0-1-1-1-b&d-g-NGINX_PLUS_UPSTREAM_4XX_RESPONSES=1-1-1-1-t&d-g-NGINX_PLUS_UPSTREAM_5XX_RESPONSES=1-1-1-1-b&d-g-NGINX_PLUS_UPSTREAM_1XX_RESPONSES=2-1-1-1-t&d-g-NGINX_PLUS_UPSTREAM_3XX_RESPONSES=2-1-1-1-b&d-g-NGINX_PLUS_UPSTREAM_ACTIVE_CONNECTIONS=0-2-1-1&d-g-NGINX_PLUS_UPSTREAM_PERC_USED_CONNECTIONS=1-2-1-1&d-g-NGINX_PLUS_UPSTREAM_TRAFFIC_SENT=0-3-1-1&d-g-NGINX_PLUS_UPSTREAM_TRAFFIC_RECEIVED=1-3-1-1&d-g-NGINX_PLUS_UPSTREAM_FAILED_CHECKS=0-4-1-1&d-g-NGINX_PLUS_UPSTREAM_DOWNTIME=1-4-1-1&d-g-NGINX_PLUS_UPSTREAM_PERC_FAILED=0-5-1-1&d-g-NGINX_PLUS_UPSTREAM_HEALTHY=1-5-1-1"
+    },
+    {
+      "name" : "Nginx Plus TCP Zones",
+      "layout" : "d-w=2&d-h=2&d-pad=5&d-bg=none&d-g-NGINX_PLUS_TCPZONE_CURRENT_CONNECTIONS=0-0-1-1&d-g-NGINX_PLUS_TCPZONE_CONNECTIONS=1-0-1-1&d-g-NGINX_PLUS_TCPZONE_TRAFFIC_SENT=0-1-1-1&d-g-NGINX_PLUS_TCPZONE_TRAFFIC_RECEIVED=1-1-1-1"
+    },
+    {
+      "name" : "Nginx Plus TCP Upstreams",
+      "layout" : "d-w=3&d-h=5&d-pad=5&d-bg=none&d-g-NGINX_PLUS_TCPUPSTREAM_STATE=0-0-1-1&d-g-NGINX_PLUS_TCPUPSTREAM_CONNECTIONS=1-0-1-1&d-g-NGINX_PLUS_TCPUPSTREAM_ACTIVE_CONNECTIONS=2-0-1-1-t&d-g-NGINX_PLUS_TCPUPSTREAM_PERC_USED_CONNECTIONS=2-0-1-1-b&d-g-NGINX_PLUS_TCPUPSTREAM_TRAFFIC_SENT=0-1-1-1&d-g-NGINX_PLUS_TCPUPSTREAM_TRAFFIC_RECEIVED=1-1-1-1&d-g-NGINX_PLUS_TCPUPSTREAM_FAILED_CHECKS=0-2-1-1&d-g-NGINX_PLUS_TCPUPSTREAM_DOWNTIME=1-2-1-1&d-g-NGINX_PLUS_TCPUPSTREAM_PERC_FAILED=0-3-1-1&d-g-NGINX_PLUS_TCPUPSTREAM_HEALTHY=1-3-1-1&d-g-NGINX_PLUS_TCPUPSTREAM_CONNECT_TIME=0-4-1-1&d-g-NGINX_PLUS_TCPUPSTREAM_FIRST_BYTE_TIME=1-4-1-1&d-g-NGINX_PLUS_TCPUPSTREAM_RESPONSE_TIME=2-4-1-1"
+    },
+    {
+      "name" : "Nginx Plus Caches",
+      "layout" : "d-w=3&d-h=2&d-pad=5&d-bg=none&d-g-NGINX_PLUS_CACHE_COLD=0-0-1-1&d-g-NGINX_PLUS_CACHE_USED=1-0-1-1&d-g-NGINX_PLUS_CACHE_HIT_PERCENT=2-0-1-1&d-g-NGINX_PLUS_CACHE_SERVED=0-1-1-1&d-g-NGINX_PLUS_CACHE_WRITTEN=1-1-1-1&d-g-NGINX_PLUS_CACHE_BYPASSED=1-1-1-1"
+    }
+  ],
+  "paramSchema" : [
+    {
+     "title" : "Poll Interval",
+      "name" : "pollInterval",
+      "description" : "The Poll Interval in milliseconds. Ex. 1000",
+      "type" : "number",
+      "default" : 1000,
+      "required" : false
+    },
+    {
+      "title" : "Source",
+      "name" : "source",
+      "description" : "The Source to display in the legend for the nginx data.  It will default to the hostname of the server",
+      "type" : "string"
+    },
+    {
+      "title" : "Statistics URL",
+      "name" : "url",
+      "description" : "The URL endpoint of where the nginx statistics are hosted.",
+      "type" : "string",
+      "default" : "http://127.0.0.1/nginx_status"
+    },
+    {
+      "title" : "Username",
+      "name" : "username",
+      "description" : "If the endpoint is password protected, what username we should use when calling it.",
+      "type" : "string"
+    },
+    {
+      "title" : "Password",
+      "name" : "password",
+      "description" : "If the endpoint is password protected, what password we should use when calling it.",
+      "type" : "password"
+    },
+    {
+      "title": "Cache Filter",
+      "name": "caches",
+      "description": "Which Caches would you like to view",
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      }
+    },
+    {
+      "title": "Zone Filter",
+      "name": "zones",
+      "description": "Which Zones would you like to view",
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      }
+    }
+    {
+      "title": "TCP Zone Filter",
+      "name": "tcpzones",
+      "description": "Which TCP Zones would you like to view",
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      }
+    },
+    {
+      "title": "Upstream Server Filter",
+      "name": "upstreams",
+      "description": "Which Upstream Servers would you like to view",
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      }
+    },
+    {
+      "title": "TCP Upstream Server Filter",
+      "name": "tcpupstreams",
+      "description": "Which TCP Upstream Servers would you like to view",
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      }
+    }
+  ]
+}
