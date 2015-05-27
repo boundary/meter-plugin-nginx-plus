@@ -145,7 +145,7 @@
       "items" : {
         "type" : "string"
       }
-    }
+    },
     {
       "title": "TCP Zone Filter",
       "name": "tcpzones",
