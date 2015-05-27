@@ -114,7 +114,7 @@
       "name" : "url",
       "description" : "The URL endpoint of where the nginx statistics are hosted.",
       "type" : "string",
-      "default" : "http://127.0.0.1/nginx_status"
+      "default" : "http://127.0.0.1/status"
     },
     {
       "title" : "Username",
