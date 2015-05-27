@@ -35,8 +35,8 @@
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
     "description": "Current requests to Nginx",
-    "displayName": "Nginx Plus Requests",
-    "displayNameShort": "nginxplus-reqs",
+    "displayName": "Nginx Plus Current Requests",
+    "displayNameShort": "nginxplus-curreqs",
     "unit": "number"
   },
 
@@ -165,7 +165,7 @@
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
     "description": "The number of requests per second being handled in the zone",
-    "displayName": "Nginx Plus Zone Requests/Second",
+    "displayName": "Nginx Plus Zone Requests/Sec",
     "displayNameShort": "nginxplus-zone-requests-ps",
     "unit": "number"
   },
@@ -234,7 +234,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The byte per second being sent from this zone",
+    "description": "The byte per second being sent from this server zone",
     "displayName": "Nginx Plus Zone Traffic Sent",
     "displayNameShort": "nginxplus-zone-traffic-sent",
     "unit": "bytecount"
@@ -244,7 +244,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The byte per second being received by this zone",
+    "description": "The byte per second being received by this server zone",
     "displayName": "Nginx Plus Zone Traffic Received",
     "displayNameShort": "nginxplus-zone-traffic-received",
     "unit": "bytecount"
@@ -254,7 +254,7 @@
     "isDisabled": 0,
     "defaultAggregate": "MAX",
     "defaultResolutionMS": 1000,
-    "description": "The current state of the upstream server",
+    "description": "The current state of the upstream server groups",
     "displayName": "Nginx Plus Upstream State",
     "displayNameShort": "nginxplus-upstream-state",
     "unit": "number"
@@ -264,7 +264,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The number of requests per second being handled for the upstream server",
+    "description": "The number of requests per second being handled for the upstream server groups",
     "displayName": "Nginx Plus Upstream Server Requests/Second",
     "displayNameShort": "nginxplus-upstream-requests-ps",
     "unit": "number"
@@ -274,7 +274,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The number of 100 reponses per second being sent by the upstream server",
+    "description": "The number of 100 reponses per second being sent by the upstream server groups",
     "displayName": "Nginx Plus Upstream Server 1XX Response/Sec",
     "displayNameShort": "nginxplus-upstream-1xx-responses",
     "unit": "number"
@@ -284,7 +284,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The number of 200 reponses per second being sent by the upstream server",
+    "description": "The number of 200 reponses per second being sent by the upstream server groups",
     "displayName": "Nginx Plus Upstream Server 2XX Response/Sec",
     "displayNameShort": "nginxplus-upstream-2xx-responses",
     "unit": "number"
@@ -294,7 +294,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The number of 300 reponses per second being sent by the upstream server",
+    "description": "The number of 300 reponses per second being sent by the upstream server groups",
     "displayName": "Nginx Plus Upstream Server 3XX Response/Sec",
     "displayNameShort": "nginxplus-upstream-3xx-responses",
     "unit": "number"
@@ -304,7 +304,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The number of 400 reponses per second being sent by the upstream server",
+    "description": "The number of 400 reponses per second being sent by the upstream server groups",
     "displayName": "Nginx Plus Upstream Server 4XX Response/Sec",
     "displayNameShort": "nginxplus-upstream-4xx-responses",
     "unit": "number"
@@ -314,7 +314,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The number of 500 reponses per second being sent by the upstream server",
+    "description": "The number of 500 reponses per second being sent by the upstream server groups",
     "displayName": "Nginx Plus Upstream Server 5XX Response/Sec",
     "displayNameShort": "nginxplus-upstream-5xx-responses",
     "unit": "number"
@@ -324,7 +324,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The total number of reponses per second being sent by the upstream server",
+    "description": "The total number of reponses per second being sent by the upstream server groups",
     "displayName": "Nginx Plus Upstream Server Total Response/Sec",
     "displayNameShort": "nginxplus-upstream-total-responses",
     "unit": "number"
@@ -334,7 +334,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The number of currently active connections to the upstream server",
+    "description": "The number of currently active connections to the upstream server groups",
     "displayName": "Nginx Plus Upstream Active Conns",
     "displayNameShort": "nginxplus-upstream-active-conn",
     "unit": "number"
@@ -344,7 +344,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The percentage connections in use to the upstream server",
+    "description": "The percentage connections in use to the upstream server groups",
     "displayName": "Nginx Plus Upstream % Used Conns",
     "displayNameShort": "nginxplus-upstream-perc-used-conn",
     "unit": "percent"
@@ -354,7 +354,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The byte per second being sent to this upstream server",
+    "description": "The byte per second being sent to this upstream server groups",
     "displayName": "Nginx Plus Upstream Server Traffic Sent",
     "displayNameShort": "nginxplus-upstream-traffic-sent",
     "unit": "bytecount"
@@ -364,7 +364,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The byte per second being received from this upstream server",
+    "description": "The byte per second being received from this upstream server groups",
     "displayName": "Nginx Plus Upstream Server Traffic Received",
     "displayNameShort": "nginxplus-upstream-traffic-received",
     "unit": "bytecount"
@@ -374,7 +374,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The number of times the server check failed to the upstream server",
+    "description": "The number of times the server check failed to the upstream server groups",
     "displayName": "Nginx Plus Upstream Failed Checks",
     "displayNameShort": "nginxplus-upstream-failed-checks",
     "unit": "number"
@@ -384,7 +384,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The total downtime of the upstream server",
+    "description": "The total downtime of the upstream server groups",
     "displayName": "Nginx Plus Upstream Downtime",
     "displayNameShort": "nginxplus-upstream-downtime",
     "unit": "duration"
@@ -394,7 +394,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The percentage of failed health checks of the upstream server",
+    "description": "The percentage of failed health checks of the upstream server groups",
     "displayName": "Nginx Plus Upstream % Failed Health Checks",
     "displayNameShort": "nginxplus-upstream-perc-failed",
     "unit": "percent"
@@ -404,7 +404,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The last health status of the upstream server",
+    "description": "The last health status of the upstream server groups",
     "displayName": "Nginx Plus Upstream Health",
     "displayNameShort": "nginxplus-upstream-health",
     "unit": "number"
@@ -454,7 +454,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The status of the TCP upstream server",
+    "description": "The status of the TCP upstream server groups",
     "displayName": "Nginx Plus TCP Upstream State",
     "displayNameShort": "nginxplus-tcpupstream-state",
     "unit": "number"
@@ -464,7 +464,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The number of client connections forwarded to the TCP upstream server",
+    "description": "The number of client connections forwarded to the TCP upstream server groups",
     "displayName": "Nginx Plus TCP Upstream Conns",
     "displayNameShort": "nginxplus-tcpupstream-active-conn",
     "unit": "number"
@@ -474,7 +474,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The number of currently active connections to the TCP upstream server",
+    "description": "The number of currently active connections to the TCP upstream server groups",
     "displayName": "Nginx Plus TCP Upstream Active Conns",
     "displayNameShort": "nginxplus-tcpupstream-active-conn",
     "unit": "number"
@@ -484,7 +484,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The percentage connections in use to the TCP upstream server",
+    "description": "The percentage connections in use to the TCP upstream server groups",
     "displayName": "Nginx Plus TCP Upstream % Used Conns",
     "displayNameShort": "nginxplus-tcpupstream-perc-used-conn",
     "unit": "percent"
@@ -494,7 +494,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The byte per second being sent to this TCP upstream server",
+    "description": "The byte per second being sent to this TCP upstream server groups",
     "displayName": "Nginx Plus TCP Upstream Server Traffic Sent",
     "displayNameShort": "nginxplus-tcpupstream-traffic-sent",
     "unit": "bytecount"
@@ -504,7 +504,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The byte per second being received from this TCP upstream server",
+    "description": "The byte per second being received from this TCP upstream server groups",
     "displayName": "Nginx Plus TCP Upstream Server Traffic Received",
     "displayNameShort": "nginxplus-tcpupstream-traffic-received",
     "unit": "bytecount"
@@ -514,7 +514,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The number of times the server check failed to the TCP upstream server",
+    "description": "The number of times the server check failed to the TCP upstream server groups",
     "displayName": "Nginx Plus TCP Upstream Failed Checks",
     "displayNameShort": "nginxplus-tcpupstream-failed-check",
     "unit": "number"
@@ -524,7 +524,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The total downtime of the TCP upstream server",
+    "description": "The total downtime of the TCP upstream server groups",
     "displayName": "Nginx Plus TCP Upstream Downtime",
     "displayNameShort": "nginxplus-tcpupstream-downtime",
     "unit": "duration"
@@ -534,7 +534,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The percentage of failed health checks of the TCP upstream server",
+    "description": "The percentage of failed health checks of the TCP upstream server groups",
     "displayName": "Nginx Plus TCP Upstream % Failed Health Checks",
     "displayNameShort": "nginxplus-tcpupstream-perc-failed",
     "unit": "percent"
@@ -544,7 +544,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The last health status of the TCP upstream server",
+    "description": "The last health status of the TCP upstream server groups",
     "displayName": "Nginx Plus TCP Upstream Health",
     "displayNameShort": "nginxplus-tcpupstream-health",
     "unit": "number"
@@ -554,7 +554,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The average time to connect to the TCP upstream server",
+    "description": "The average time to connect to the TCP upstream server groups",
     "displayName": "Nginx Plus TCP Upstream Connect Time",
     "displayNameShort": "nginxplus-tcpupstream-connect-time",
     "unit": "duration"
@@ -564,7 +564,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The average time to receive the first byte of data from the TCP upstream server",
+    "description": "The average time to receive the first byte of data from the TCP upstream server groups",
     "displayName": "Nginx Plus TCP Upstream First Byte Time",
     "displayNameShort": "nginxplus-tcpupstream-first-byte-time",
     "unit": "duration"
@@ -574,7 +574,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The average time to receive the last byte of data from the TCP upstream server",
+    "description": "The average time to receive the last byte of data from the TCP upstream server groups",
     "displayName": "Nginx Plus TCP Upstream Response Time",
     "displayNameShort": "nginxplus-tcpupstream-response-time",
     "unit": "duration"

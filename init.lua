@@ -95,7 +95,7 @@ function plugin:onParseValues(data)
     metrics['NGINX_PLUS_UPTIME'] = tonumber(stats['timestamp']) - tonumber(stats['load_timestamp'])
     for cache_name, cache in pairs(stats.caches) do
       if setContains(self.caches_to_check, cache_name) then
-        local src = self.source .. '.' .. cache_name
+        local src = self.source .. '.' .. string.gsub(cache_name, ":", "_")
         local served = tonumber(cache['hit']['bytes'])+tonumber(cache['stale']['bytes'])+tonumber(cache['updating']['bytes'])+tonumber(cache['revalidated']['bytes'])
         local bypassed = tonumber(cache['miss']['bytes'])+tonumber(cache['expired']['bytes'])+tonumber(cache['bypass']['bytes'])
         table.insert(metrics, pack('NGINX_PLUS_CACHE_COLD', cache['cold'] and 1 or 0, nil, src))
@@ -109,7 +109,7 @@ function plugin:onParseValues(data)
     end
     for zone_name, zone in pairs(stats.server_zones) do
       if setContains(self.zones_to_check, zone_name) then
-        local src = self.source .. '.' .. zone_name
+        local src = self.source .. '.' .. string.gsub(zone_name, ":", "_")
         table.insert(metrics, pack('NGINX_PLUS_ZONE_CURRENT_REQUESTS', zone['processing'], nil, src))
         table.insert(metrics, pack('NGINX_PLUS_ZONE_REQUESTS', acc:accumulate('requests_' .. zone_name, zone['requests']), nil, src))
         table.insert(metrics, pack('NGINX_PLUS_ZONE_1XX_RESPONSES', acc:accumulate('responses_' .. zone_name, zone['responses']['1xx']), nil, src))
@@ -126,7 +126,7 @@ function plugin:onParseValues(data)
       if setContains(self.upstreams_to_check, upstream_name) then
         for _, upstream in pairs(upstream_array) do
           local backup = upstream['backup'] and ".b_" or "."
-          local src = self.source .. '.' .. upstream_name .. backup .. upstream['server']
+          local src = self.source .. '.' .. string.gsub(upstream_name, ":", "_") .. backup .. string.gsub(upstream['server'], ":", "_")
           table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_STATE', (string.upper(upstream['state']) == 'UP' and 0) or (string.upper(upstream['state']) == 'DRAINING' and 1) or (string.upper(upstream['state']) == 'DOWN' and 2) or (string.upper(upstream['state']) == 'UNAVAIL' and 3) or (string.upper(upstream['state']) == 'UNHEALTHY' and 4) or 5, nil, src))
           table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_REQUESTS', acc:accumulate('responses_' .. upstream_name, upstream['requests']), nil, src))
           table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_1XX_RESPONSES', acc:accumulate('responses_' .. upstream_name, upstream['responses']['1xx']), nil, src))
@@ -148,7 +148,7 @@ function plugin:onParseValues(data)
     end
     for TCP_zone_name, TCP_zone in pairs(stats.stream.server_zones) do
       if setContains(self.tcpzones_to_check, TCP_zone_name) then
-        local src = self.source .. '.' .. TCP_zone_name
+        local src = self.source .. '.' .. string.gsub(TCP_zone_name, ":", "_")
         table.insert(metrics, pack('NGINX_PLUS_TCPZONE_CURRENT_CONNECTIONS', TCP_zone['processing'], nil, src))
         table.insert(metrics, pack('NGINX_PLUS_TCPZONE_CONNECTIONS', acc:accumulate('connections_' .. TCP_zone_name, TCP_zone['connections']), nil, src))
         table.insert(metrics, pack('NGINX_PLUS_TCPZONE_TRAFFIC_SENT', acc:accumulate('traffic_sent_' .. TCP_zone_name, TCP_zone['sent']), nil, src))
@@ -159,7 +159,7 @@ function plugin:onParseValues(data)
       if setContains(self.tcpupstreams_to_check, TCP_upstream_name) then
         for _, TCP_upstream in pairs(TCP_upstream_array) do
           local backup = TCP_upstream['backup'] and ".b_" or "."
-          local src = self.source .. '.' .. TCP_upstream_name .. backup .. TCP_upstream['server']
+          local src = self.source .. '.' .. string.gsub(TCP_upstream_name, ":", "_") .. backup .. string.gsub(TCP_upstream['server'], ":", "_")
           table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_STATE', (string.upper(TCP_upstream['state']) == 'UP' and 0) or (string.upper(TCP_upstream['state']) == 'DRAINING' and 1) or (string.upper(TCP_upstream['state']) == 'DOWN' and 2) or (string.upper(TCP_upstream['state']) == 'UNAVAIL' and 3) or (string.upper(TCP_upstream['state']) == 'UNHEALTHY' and 4) or 5, nil, src))
           table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_CONNECTIONS', acc:accumulate('connections_' .. TCP_upstream_name, TCP_upstream['connections']), nil, src))
           table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_ACTIVE_CONNECTIONS', TCP_upstream['active'], nil, src))
