@@ -376,7 +376,7 @@
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
     "description": "The number of times the server check failed to the upstream server groups",
-    "displayName": "Failed Checks Upstream Nginx Plus",
+    "displayName": "Failed Server Checks Upstream Nginx Plus",
     "displayNameShort": "Fail Check Upst Ngp",
     "unit": "number"
   },
@@ -386,8 +386,8 @@
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
     "description": "The total downtime of the upstream server groups",
-    "displayName": "Downtime Upstream Nginx Plus",
-    "displayNameShort": "Downtime Upst Ngp",
+    "displayName": "Server Downtime Upstream Nginx Plus",
+    "displayNameShort": "Srv Dwntime Upst Ngp",
     "unit": "duration"
   },
 
@@ -516,7 +516,7 @@
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
     "description": "The number of times the server check failed to the TCP upstream server groups",
-    "displayName": "Failed Checks TCP Upstream Nginx Plus",
+    "displayName": "Failed Server Checks TCP Upstream Nginx Plus",
     "displayNameShort": "Fail Check Tcpup Ngp",
     "unit": "number"
   },
@@ -526,8 +526,8 @@
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
     "description": "The total downtime of the TCP upstream server groups",
-    "displayName": "Downtime TCP Upstream Nginx Plus",
-    "displayNameShort": "Downtime Tcpup Ngp",
+    "displayName": "Server Downtime TCP Upstream Nginx Plus",
+    "displayNameShort": "Srv Dwntime Tcpup Ngp",
     "unit": "duration"
   },
 

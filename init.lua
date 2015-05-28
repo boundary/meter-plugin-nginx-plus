@@ -83,7 +83,7 @@ function plugin:onParseValues(data)
   if stats then
     local handled = stats['connections']['accepted'] - stats['connections']['dropped']
     local requests = stats['requests']['total']
-    local reqs_per_connection = (handled > 0) and requests / handled or 0
+    local reqs_per_connection = (handled > 0 and requests/handled) or 0
 
     metrics['NGINX_PLUS_ACTIVE_CONNECTIONS'] = stats['connections']['active'] + stats['connections']['idle']
     metrics['NGINX_PLUS_WAITING'] = stats['connections']['idle']
@@ -126,8 +126,8 @@ function plugin:onParseValues(data)
         table.insert(metrics, pack('NGINX_PLUS_ZONE_4XX_RESPONSES', acc:accumulate('responses_' .. zone_name, zone['responses']['4xx']), nil, src))
         table.insert(metrics, pack('NGINX_PLUS_ZONE_5XX_RESPONSES', acc:accumulate('responses_' .. zone_name, zone['responses']['5xx']), nil, src))
         table.insert(metrics, pack('NGINX_PLUS_ZONE_TOTAL_RESPONSES', acc:accumulate('responses_' .. zone_name, zone['responses']['total']), nil, src))
-        table.insert(metrics, pack('NGINX_PLUS_ZONE_TRAFFIC_SENT', acc:accumulate('traffic_sent_' .. zone_name, zone['sent']), nil, src))
-        table.insert(metrics, pack('NGINX_PLUS_ZONE_TRAFFIC_RECEIVED', acc:accumulate('traffic_received_' .. zone_name, zone['received']), nil, src))
+        table.insert(metrics, pack('NGINX_PLUS_ZONE_TRAFFIC_SENT', zone['sent'], nil, src))
+        table.insert(metrics, pack('NGINX_PLUS_ZONE_TRAFFIC_RECEIVED', zone['received'], nil, src))
       end
     end
     for upstream_name, upstream_array in pairs(stats.upstreams) do
@@ -149,8 +149,8 @@ function plugin:onParseValues(data)
           else
             table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_PERC_USED_CONNECTIONS', 0, nil, src))
           end
-          table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_TRAFFIC_SENT', acc:accumulate('traffic_sent_' .. upstream_name, upstream['sent']), nil, src))
-          table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_TRAFFIC_RECEIVED', acc:accumulate('traffic_received_' .. upstream_name, upstream['received']), nil, src))
+          table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_TRAFFIC_SENT', upstream['sent'], nil, src))
+          table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_TRAFFIC_RECEIVED', upstream['received'], nil, src))
           table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_FAILED_CHECKS', upstream['fails'], nil, src))
           table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_DOWNTIME', upstream['downtime'], nil, src))
           if upstream['health_checks']['checks'] and tonumber(upstream['health_checks']['checks']) > 0 then
@@ -167,8 +167,8 @@ function plugin:onParseValues(data)
         local src = self.source .. '.' .. string.gsub(TCP_zone_name, ":", "_")
         table.insert(metrics, pack('NGINX_PLUS_TCPZONE_CURRENT_CONNECTIONS', TCP_zone['processing'], nil, src))
         table.insert(metrics, pack('NGINX_PLUS_TCPZONE_CONNECTIONS', acc:accumulate('connections_' .. TCP_zone_name, TCP_zone['connections']), nil, src))
-        table.insert(metrics, pack('NGINX_PLUS_TCPZONE_TRAFFIC_SENT', acc:accumulate('traffic_sent_' .. TCP_zone_name, TCP_zone['sent']), nil, src))
-        table.insert(metrics, pack('NGINX_PLUS_TCPZONE_TRAFFIC_RECEIVED', acc:accumulate('traffic_received_' .. TCP_zone_name, TCP_zone['received']), nil, src))
+        table.insert(metrics, pack('NGINX_PLUS_TCPZONE_TRAFFIC_SENT', TCP_zone['sent'], nil, src))
+        table.insert(metrics, pack('NGINX_PLUS_TCPZONE_TRAFFIC_RECEIVED', TCP_zone['received'], nil, src))
       end
     end
     for TCP_upstream_name, TCP_upstream_array in pairs(stats.stream.upstreams) do
@@ -184,8 +184,8 @@ function plugin:onParseValues(data)
           else
             table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_PERC_USED_CONNECTIONS', 0, nil, src))
           end
-          table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_TRAFFIC_SENT', acc:accumulate('traffic_sent_' .. TCP_upstream_name, TCP_upstream['sent']), nil, src))
-          table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_TRAFFIC_RECEIVED', acc:accumulate('traffic_received_' .. TCP_upstream_name, TCP_upstream['received']), nil, src))
+          table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_TRAFFIC_SENT', TCP_upstream['sent'], nil, src))
+          table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_TRAFFIC_RECEIVED', TCP_upstream['received'], nil, src))
           table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_FAILED_CHECKS', TCP_upstream['fails'], nil, src))
           table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_DOWNTIME', TCP_upstream['downtime'], nil, src))
           if TCP_upstream['health_checks']['checks'] and tonumber(TCP_upstream['health_checks']['checks']) > 0 then
