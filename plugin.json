@@ -138,6 +138,13 @@
       }
     },
     {
+      "title" : "Fire Cache Cold Event?",
+      "name" : "cache_cold_event",
+      "description" : "If the cache changes from Warm to Cold or Cold to Warm, fire an event.",
+      "type" : "boolean",
+      "default" : false
+    },
+    {
       "title": "Zone Filter",
       "name": "zones",
       "description": "Which Zones would you like to view",
@@ -165,6 +172,20 @@
       }
     },
     {
+      "title" : "Fire Upstream Server State Change Event?",
+      "name" : "upstream_state_event",
+      "description" : "If the upstream server state changes fire an event.",
+      "type" : "boolean",
+      "default" : false
+    },
+    {
+      "title" : "Fire Upstream Server Failed Health Check Event?",
+      "name" : "upstream_failed_hc_event",
+      "description" : "If the upstream server state changes fire an event.",
+      "type" : "boolean",
+      "default" : false
+    },
+    {
       "title": "TCP Upstream Server Filter",
       "name": "tcpupstreams",
       "description": "Which TCP Upstream Servers would you like to view",
@@ -172,6 +193,20 @@
       "items" : {
         "type" : "string"
       }
+    },
+    {
+      "title" : "Fire TCP Upstream Server State Change Event?",
+      "name" : "tcpup_state_event",
+      "description" : "If the upstream server state changes fire an event.",
+      "type" : "boolean",
+      "default" : false
+    },
+    {
+      "title" : "Fire TCP Upstream Server Failed Health Check Event?",
+      "name" : "tcpup_failed_hc_event",
+      "description" : "If the upstream server state changes fire an event.",
+      "type" : "boolean",
+      "default" : false
     }
   ]
 }

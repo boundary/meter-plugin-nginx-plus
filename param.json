@@ -1,5 +1,6 @@
 {
   "source" : "demoNginx",
   "pollInterval" : 1000,
+  "upstream_failed_hc_event" : true,
   "url" : "http://demo.nginx.com/status"
 }

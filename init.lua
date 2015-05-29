@@ -98,10 +98,14 @@ function plugin:onParseValues(data)
         local src = self.source .. '.' .. string.gsub(cache_name, ":", "_")
         local served = tonumber(cache['hit']['bytes'])+tonumber(cache['stale']['bytes'])+tonumber(cache['updating']['bytes'])+tonumber(cache['revalidated']['bytes'])
         local bypassed = tonumber(cache['miss']['bytes'])+tonumber(cache['expired']['bytes'])+tonumber(cache['bypass']['bytes'])
-        local cold_change = acc:accumulate('caches_cold_' .. cache_name, cache['cold'] and 1 or 0)
+
         table.insert(metrics, pack('NGINX_PLUS_CACHE_COLD', cache['cold'] and 1 or 0, nil, src))
-        if cold_change ~= 0 then
-          plugin:printInfo(string.format('Cache %s is now %s', cache_name, (cache['cold'] and 'Cold' or 'Warm')))
+        if params.cache_cold_event then
+          local cold_change = acc:accumulate('caches_cold_' .. cache_name, cache['cold'] and 1 or 0)
+
+          if cold_change ~= 0 then
+            plugin:printInfo(string.format('Cache %s is now %s', cache_name, (cache['cold'] and 'Cold' or 'Warm')))
+          end
         end
         table.insert(metrics, pack('NGINX_PLUS_CACHE_SIZE', cache['size'], nil, src))
         if tonumber(cache['max_size']) == 0 then
@@ -141,12 +145,14 @@ function plugin:onParseValues(data)
           local upstream_server_name = string.gsub(upstream_name, ":", "_") .. backup .. string.gsub(upstream['server'], ":", "_")
           local src = self.source .. '.' .. upstream_server_name
           local state = (string.upper(upstream['state']) == 'UP' and 0) or (string.upper(upstream['state']) == 'DRAINING' and 1) or (string.upper(upstream['state']) == 'DOWN' and 2) or (string.upper(upstream['state']) == 'UNAVAIL' and 3) or (string.upper(upstream['state']) == 'UNHEALTHY' and 4) or 5
-          local state_change = acc:accumulate('upstream_states_' .. upstream_server_name, state)
           local health_check = upstream['health_checks']['last_passed'] and 1 or 0
-          local health_check_change = acc:accumulate('upstream_health_checks_' .. upstream_server_name, health_check)
           table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_STATE', state, nil, src))
-          if state_change ~= 0 then
-            plugin:printInfo(string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
+          if params.upstream_state_event then
+            local state_change = acc:accumulate('upstream_states_' .. upstream_server_name, state)
+
+            if state_change ~= 0 then
+              plugin:printInfo(string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
+            end
           end
           table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_REQUESTS', acc:accumulate('upstream_requests_' .. upstream_name, upstream['requests']), nil, src))
           table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_1XX_RESPONSES', acc:accumulate('upstream_1xx_responses_' .. upstream_server_name, upstream['responses']['1xx']), nil, src))
@@ -171,8 +177,12 @@ function plugin:onParseValues(data)
             table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_PERC_FAILED', 0, nil, src))
           end
           table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_HEALTHY', health_check, nil, src))
-          if health_check_change ~= 0 then
-            plugin:printInfo(string.format('Upstream server %s %s its last health check', upstream_server_name, upstream['health_checks']['last_passed'] and 'passed' or 'failed'))
+          if params.upstream_failed_hc_event then
+            local health_check_change = acc:accumulate('upstream_health_checks_' .. upstream_server_name, health_check)
+
+            if health_check_change ~= 0 then
+              plugin:printInfo(string.format('Upstream server %s %s its last health check', upstream_server_name, upstream['health_checks']['last_passed'] and 'passed' or 'failed'))
+            end
           end
         end
       end
@@ -193,12 +203,14 @@ function plugin:onParseValues(data)
           local TCP_upstream_server_name = string.gsub(TCP_upstream_name, ":", "_") .. backup .. string.gsub(TCP_upstream['server'], ":", "_")
           local src = self.source .. '.' .. TCP_upstream_server_name
           local state = (string.upper(TCP_upstream['state']) == 'UP' and 0) or (string.upper(TCP_upstream['state']) == 'DRAINING' and 1) or (string.upper(TCP_upstream['state']) == 'DOWN' and 2) or (string.upper(TCP_upstream['state']) == 'UNAVAIL' and 3) or (string.upper(TCP_upstream['state']) == 'UNHEALTHY' and 4) or 5
-          local state_change = acc:accumulate('TCP_upstream_states_' .. TCP_upstream_server_name, state)
           local health_check = TCP_upstream['health_checks']['last_passed'] and 1 or 0
-          local health_check_change = acc:accumulate('TCP_upstream_health_checks_' .. TCP_upstream_server_name, health_check)
           table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_STATE', state, nil, src))
-          if state_change ~= 0 then
-            plugin:printInfo(string.format('TCP Upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
+          if params.tcpup_state_event then
+            local state_change = acc:accumulate('TCP_upstream_states_' .. TCP_upstream_server_name, state)
+
+            if state_change ~= 0 then
+              plugin:printInfo(string.format('TCP Upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
+            end
           end
           table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_CONNECTIONS', acc:accumulate('tcpup_connections_' .. TCP_upstream_server_name, TCP_upstream['connections']), nil, src))
           table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_ACTIVE_CONNECTIONS', TCP_upstream['active'], nil, src))
@@ -217,8 +229,12 @@ function plugin:onParseValues(data)
             table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_PERC_FAILED', 0, nil, src))
           end
           table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_HEALTHY', health_check, nil, src))
-          if health_check_change ~= 0 then
-            plugin:printInfo(string.format('Upstream server %s %s its last health check', TCP_upstream_server_name, TCP_upstream['health_checks']['last_passed'] and 'passed' or 'failed'))
+          if params.tcpup_failed_hc_event then
+            local health_check_change = acc:accumulate('TCP_upstream_health_checks_' .. TCP_upstream_server_name, health_check)
+
+            if health_check_change ~= 0 then
+              plugin:printInfo(string.format('Upstream server %s %s its last health check', TCP_upstream_server_name, TCP_upstream['health_checks']['last_passed'] and 'passed' or 'failed'))
+            end
           end
           if TCP_upstream['connect_time'] then
             table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_CONNECT_TIME', TCP_upstream['connect_time'], nil, src))
