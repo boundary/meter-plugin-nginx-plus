@@ -104,7 +104,11 @@ function plugin:onParseValues(data)
           local cold_change = acc:accumulate('caches_cold_' .. cache_name, cache['cold'] and 1 or 0)
 
           if cold_change ~= 0 then
-            plugin:printInfo(string.format('Cache %s is now %s', cache_name, (cache['cold'] and 'Cold' or 'Warm')))
+            if cache['cold'] then
+              plugin:printWarn(string.format('Cache %s is now %s', cache_name, 'Cold'))
+            else
+              plugin:printInfo(string.format('Cache %s is now %s', 'Warm'))
+            end
           end
         end
         table.insert(metrics, pack('NGINX_PLUS_CACHE_SIZE', cache['size'], nil, src))
@@ -151,7 +155,19 @@ function plugin:onParseValues(data)
             local state_change = acc:accumulate('upstream_states_' .. upstream_server_name, state)
 
             if state_change ~= 0 then
-              plugin:printInfo(string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
+              if string.upper(upstream['state']) == 'UP' then
+                plugin:printInfo(string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
+              elseif string.upper(upstream['state']) == 'DRAINING' then
+                plugin:printWarn(string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
+              elseif string.upper(upstream['state']) == 'DOWN' then
+                plugin:printCritical(string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
+              elseif string.upper(upstream['state']) == 'UNAVAIL' then
+                plugin:printError(string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
+              elseif string.upper(upstream['state']) == 'UNHEALTHY' then
+                plugin:printError(string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
+              else
+                plugin:printError(string.format('Upstream server %s is now %s', upstream_server_name, 'Unknown'))
+              end
             end
           end
           table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_REQUESTS', acc:accumulate('upstream_requests_' .. upstream_name, upstream['requests']), nil, src))
@@ -181,7 +197,11 @@ function plugin:onParseValues(data)
             local health_check_change = acc:accumulate('upstream_health_checks_' .. upstream_server_name, health_check)
 
             if health_check_change ~= 0 then
-              plugin:printInfo(string.format('Upstream server %s %s its last health check', upstream_server_name, upstream['health_checks']['last_passed'] and 'passed' or 'failed'))
+              if upstream['health_checks']['last_passed'] then
+                plugin:printInfo(string.format('Upstream server %s %s its last health check', upstream_server_name, 'passed'))
+              else
+                plugin:printWarn(string.format('Upstream server %s %s its last health check', upstream_server_name, 'failed'))
+              end
             end
           end
         end
@@ -209,7 +229,19 @@ function plugin:onParseValues(data)
             local state_change = acc:accumulate('TCP_upstream_states_' .. TCP_upstream_server_name, state)
 
             if state_change ~= 0 then
-              plugin:printInfo(string.format('TCP Upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
+              if string.upper(TCP_upstream['state']) == 'UP' then
+                plugin:printInfo(string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
+              elseif string.upper(TCP_upstream['state']) == 'DRAINING' then
+                plugin:printWarn(string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
+              elseif string.upper(TCP_upstream['state']) == 'DOWN' then
+                plugin:printCritical(string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
+              elseif string.upper(TCP_upstream['state']) == 'UNAVAIL' then
+                plugin:printError(string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
+              elseif string.upper(TCP_upstream['state']) == 'UNHEALTHY' then
+                plugin:printError(string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
+              else
+                plugin:printError(string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, 'Unknown'))
+              end
             end
           end
           table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_CONNECTIONS', acc:accumulate('tcpup_connections_' .. TCP_upstream_server_name, TCP_upstream['connections']), nil, src))
@@ -233,7 +265,11 @@ function plugin:onParseValues(data)
             local health_check_change = acc:accumulate('TCP_upstream_health_checks_' .. TCP_upstream_server_name, health_check)
 
             if health_check_change ~= 0 then
-              plugin:printInfo(string.format('Upstream server %s %s its last health check', TCP_upstream_server_name, TCP_upstream['health_checks']['last_passed'] and 'passed' or 'failed'))
+              if TCP_upstream['health_checks']['last_passed'] then
+                plugin:printInfo(string.format('TCP upstream server %s %s its last health check', TCP_upstream_server_name, 'passed'))
+              else
+                plugin:printWarn(string.format('TCP upstream server %s %s its last health check', TCP_upstream_server_name, 'failed'))
+              end
             end
           end
           if TCP_upstream['connect_time'] then

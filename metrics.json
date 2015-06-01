@@ -154,7 +154,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The number of currently active requests in the zone",
+    "description": "The number of currently active requests in the server zone",
     "displayName": "Active Requests Zone Servers Nginx Plus",
     "displayNameShort": "Act Requests Zn Ngp",
     "unit": "number"
@@ -164,7 +164,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The number of requests per second being handled in the zone",
+    "description": "The number of requests per second being handled in the server zone",
     "displayName": "Requests/Sec Zone Nginx Plus",
     "displayNameShort": "Requests/Sec Zn Ngp",
     "unit": "number"
@@ -174,7 +174,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The number of 100 reponses per second being sent from the zone",
+    "description": "The number of 100 reponses per second being sent from the server zone",
     "displayName": "1XX Response/Sec Zone Nginx Plus",
     "displayNameShort": "1xx Responses Zn Ngp",
     "unit": "number"
@@ -184,7 +184,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The number of 200 reponses per second being sent from the zone",
+    "description": "The number of 200 reponses per second being sent from the server zone",
     "displayName": "2XX Response/Sec Zone Nginx Plus",
     "displayNameShort": "2xx Responses Zn Ngp",
     "unit": "number"
@@ -194,7 +194,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The number of 300 reponses per second being sent from the zone",
+    "description": "The number of 300 reponses per second being sent from the server zone",
     "displayName": "3XX Response/Sec Zone Nginx Plus",
     "displayNameShort": "3xx Responses Zn Ngp",
     "unit": "number"
@@ -204,7 +204,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The number of 400 reponses per second being sent from the zone",
+    "description": "The number of 400 reponses per second being sent from the server zone",
     "displayName": "4XX Response/Sec Zone Nginx Plus",
     "displayNameShort": "4xx Responses Zn Ngp",
     "unit": "number"
@@ -214,7 +214,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The number of 500 reponses per second being sent from the zone",
+    "description": "The number of 500 reponses per second being sent from the server zone",
     "displayName": "5XX Response/Sec Zone Nginx Plus",
     "displayNameShort": "5xx Responses Zn Ngp",
     "unit": "number"
@@ -224,7 +224,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The total number of reponses per second being sent from the zone",
+    "description": "The total number of reponses per second being sent from the server zone",
     "displayName": "Total Response/Sec Zone Nginx Plus",
     "displayNameShort": "Totrsp Zn Ngp",
     "displayNameShort": "Sum Responses Zn Ngp",
@@ -415,7 +415,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The number of currently active connections in the TCP zone",
+    "description": "The number of currently active connections in the TCP server zone",
     "displayName": "Active Conns TCP Zone Nginx Plus",
     "displayNameShort": "Act Connct Tcpzn Ngp",
     "unit": "number"
@@ -425,7 +425,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The connections per second to the TCP zone",
+    "description": "The connections per second to the TCP server zone",
     "displayName": "Connection/Sec TCP Zone Nginx Plus",
     "displayNameShort": "Connct/Sec Tcpzn Ngp",
     "unit": "number"
@@ -435,7 +435,7 @@
     "isDisabled": 0,
     "defaultAggregate": "AVG",
     "defaultResolutionMS": 1000,
-    "description": "The byte per second being sent from this TCP zone",
+    "description": "The byte per second being sent from this TCP server zone",
     "displayName": "Traffic Sent TCP Zone Server Nginx Plus",
     "displayNameShort": "Traffc Snt Tcpzn Ngp",
     "unit": "bytecount"
