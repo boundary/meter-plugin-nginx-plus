@@ -1,6 +1,10 @@
 {
   "source" : "demoNginx",
-  "pollInterval" : 1000,
+  "pollInterval" : 5000,
+  "cache_cold_event" : true,
+  "upstream_state_event" : true,
   "upstream_failed_hc_event" : true,
+  "tcpup_state_event" : true,
+  "tcpup_failed_hc_event" : true,
   "url" : "http://demo.nginx.com/status"
 }

@@ -10,7 +10,7 @@ local gsplit = framework.string.gsplit
 local pack = framework.util.pack
 
 local params = framework.params
-params.pollInterval = (params.pollSeconds and tonumber(params.pollSeconds)*1000) or params.pollInterval or 1000
+params.pollInterval = (params.pollSeconds and tonumber(params.pollSeconds)*1000) or params.pollInterval or 5000
 params.name = 'Boundary NGINX Plus Plugin'
 params.version = '1.0' 
 params.tags = 'nginx+' 
@@ -87,9 +87,9 @@ function plugin:onParseValues(data)
 
     metrics['NGINX_PLUS_ACTIVE_CONNECTIONS'] = stats['connections']['active'] + stats['connections']['idle']
     metrics['NGINX_PLUS_WAITING'] = stats['connections']['idle']
-    metrics['NGINX_PLUS_HANDLED'] = acc:accumulate('handled', handled)
+    metrics['NGINX_PLUS_HANDLED'] = acc:accumulate('handled', handled)/(params.pollInterval/1000)
     metrics['NGINX_PLUS_NOT_HANDLED'] = stats['connections']['dropped']
-    metrics['NGINX_PLUS_REQUESTS'] = acc:accumulate('requests', requests)
+    metrics['NGINX_PLUS_REQUESTS'] = acc:accumulate('requests', requests)/(params.pollInterval/1000)
     metrics['NGINX_PLUS_CURRENT_REQUESTS'] = stats['requests']['current']
     metrics['NGINX_PLUS_REQUESTS_PER_CONNECTION'] = reqs_per_connection
     metrics['NGINX_PLUS_UPTIME'] = tonumber(stats['timestamp']) - tonumber(stats['load_timestamp'])
@@ -131,15 +131,15 @@ function plugin:onParseValues(data)
       if setContains(self.zones_to_check, zone_name) then
         local src = self.source .. '.' .. string.gsub(zone_name, ":", "_")
         table.insert(metrics, pack('NGINX_PLUS_ZONE_CURRENT_REQUESTS', zone['processing'], nil, src))
-        table.insert(metrics, pack('NGINX_PLUS_ZONE_REQUESTS', acc:accumulate('zone_requests_' .. zone_name, zone['requests']), nil, src))
-        table.insert(metrics, pack('NGINX_PLUS_ZONE_1XX_RESPONSES', acc:accumulate('zone_1xx_responses_' .. zone_name, zone['responses']['1xx']), nil, src))
-        table.insert(metrics, pack('NGINX_PLUS_ZONE_2XX_RESPONSES', acc:accumulate('zone_2xx_responses_' .. zone_name, zone['responses']['2xx']), nil, src))
-        table.insert(metrics, pack('NGINX_PLUS_ZONE_3XX_RESPONSES', acc:accumulate('zone_3xx_responses_' .. zone_name, zone['responses']['3xx']), nil, src))
-        table.insert(metrics, pack('NGINX_PLUS_ZONE_4XX_RESPONSES', acc:accumulate('zone_4xx_responses_' .. zone_name, zone['responses']['4xx']), nil, src))
-        table.insert(metrics, pack('NGINX_PLUS_ZONE_5XX_RESPONSES', acc:accumulate('zone_5xx_responses_' .. zone_name, zone['responses']['5xx']), nil, src))
-        table.insert(metrics, pack('NGINX_PLUS_ZONE_TOTAL_RESPONSES', acc:accumulate('zone_total_responses_' .. zone_name, zone['responses']['total']), nil, src))
-        table.insert(metrics, pack('NGINX_PLUS_ZONE_TRAFFIC_SENT', acc:accumulate('zone_traffic_sent_' .. zone_name, zone['sent']), nil, src))
-        table.insert(metrics, pack('NGINX_PLUS_ZONE_TRAFFIC_RECEIVED', acc:accumulate('zone_traffic_received_' .. zone_name, zone['received']), nil, src))
+        table.insert(metrics, pack('NGINX_PLUS_ZONE_REQUESTS', acc:accumulate('zone_requests_' .. zone_name, zone['requests'])/(params.pollInterval/1000), nil, src))
+        table.insert(metrics, pack('NGINX_PLUS_ZONE_1XX_RESPONSES', acc:accumulate('zone_1xx_responses_' .. zone_name, zone['responses']['1xx'])/(params.pollInterval/1000), nil, src))
+        table.insert(metrics, pack('NGINX_PLUS_ZONE_2XX_RESPONSES', acc:accumulate('zone_2xx_responses_' .. zone_name, zone['responses']['2xx'])/(params.pollInterval/1000), nil, src))
+        table.insert(metrics, pack('NGINX_PLUS_ZONE_3XX_RESPONSES', acc:accumulate('zone_3xx_responses_' .. zone_name, zone['responses']['3xx'])/(params.pollInterval/1000), nil, src))
+        table.insert(metrics, pack('NGINX_PLUS_ZONE_4XX_RESPONSES', acc:accumulate('zone_4xx_responses_' .. zone_name, zone['responses']['4xx'])/(params.pollInterval/1000), nil, src))
+        table.insert(metrics, pack('NGINX_PLUS_ZONE_5XX_RESPONSES', acc:accumulate('zone_5xx_responses_' .. zone_name, zone['responses']['5xx'])/(params.pollInterval/1000), nil, src))
+        table.insert(metrics, pack('NGINX_PLUS_ZONE_TOTAL_RESPONSES', acc:accumulate('zone_total_responses_' .. zone_name, zone['responses']['total'])/(params.pollInterval/1000), nil, src))
+        table.insert(metrics, pack('NGINX_PLUS_ZONE_TRAFFIC_SENT', acc:accumulate('zone_traffic_sent_' .. zone_name, zone['sent'])/(params.pollInterval/1000), nil, src))
+        table.insert(metrics, pack('NGINX_PLUS_ZONE_TRAFFIC_RECEIVED', acc:accumulate('zone_traffic_received_' .. zone_name, zone['received'])/(params.pollInterval/1000), nil, src))
       end
     end
     for upstream_name, upstream_array in pairs(stats.upstreams) do
@@ -164,27 +164,27 @@ function plugin:onParseValues(data)
               elseif string.upper(upstream['state']) == 'UNAVAIL' then
                 plugin:printError(string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
               elseif string.upper(upstream['state']) == 'UNHEALTHY' then
-                plugin:printError(string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
+                plugin:printWarn(string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
               else
                 plugin:printError(string.format('Upstream server %s is now %s', upstream_server_name, 'Unknown'))
               end
             end
           end
-          table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_REQUESTS', acc:accumulate('upstream_requests_' .. upstream_name, upstream['requests']), nil, src))
-          table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_1XX_RESPONSES', acc:accumulate('upstream_1xx_responses_' .. upstream_server_name, upstream['responses']['1xx']), nil, src))
-          table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_2XX_RESPONSES', acc:accumulate('upstream_2xx_responses_' .. upstream_server_name, upstream['responses']['2xx']), nil, src))
-          table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_3XX_RESPONSES', acc:accumulate('upstream_3xx_responses_' .. upstream_server_name, upstream['responses']['3xx']), nil, src))
-          table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_4XX_RESPONSES', acc:accumulate('upstream_4xx_responses_' .. upstream_server_name, upstream['responses']['4xx']), nil, src))
-          table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_5XX_RESPONSES', acc:accumulate('upstream_5xx_responses_' .. upstream_server_name, upstream['responses']['5xx']), nil, src))
-          table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_TOTAL_RESPONSES', acc:accumulate('upstream_total_responses_' .. upstream_server_name, upstream['responses']['total']), nil, src))
+          table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_REQUESTS', acc:accumulate('upstream_requests_' .. upstream_name, upstream['requests'])/(params.pollInterval/1000), nil, src))
+          table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_1XX_RESPONSES', acc:accumulate('upstream_1xx_responses_' .. upstream_server_name, upstream['responses']['1xx'])/(params.pollInterval/1000), nil, src))
+          table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_2XX_RESPONSES', acc:accumulate('upstream_2xx_responses_' .. upstream_server_name, upstream['responses']['2xx'])/(params.pollInterval/1000), nil, src))
+          table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_3XX_RESPONSES', acc:accumulate('upstream_3xx_responses_' .. upstream_server_name, upstream['responses']['3xx'])/(params.pollInterval/1000), nil, src))
+          table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_4XX_RESPONSES', acc:accumulate('upstream_4xx_responses_' .. upstream_server_name, upstream['responses']['4xx'])/(params.pollInterval/1000), nil, src))
+          table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_5XX_RESPONSES', acc:accumulate('upstream_5xx_responses_' .. upstream_server_name, upstream['responses']['5xx'])/(params.pollInterval/1000), nil, src))
+          table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_TOTAL_RESPONSES', acc:accumulate('upstream_total_responses_' .. upstream_server_name, upstream['responses']['total'])/(params.pollInterval/1000), nil, src))
           table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_ACTIVE_CONNECTIONS', upstream['active'], nil, src))
           if upstream['max_conns'] and tonumber(upstream['max_conns']) > 0 then
             table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_PERC_USED_CONNECTIONS', tonumber(upstream['active'])/tonumber(upstream['max_conns']), nil, src))
           else
             table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_PERC_USED_CONNECTIONS', 0, nil, src))
           end
-          table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_TRAFFIC_SENT', acc:accumulate('upstream_traffic_sent_' .. upstream_server_name, upstream['sent']), nil, src))
-          table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_TRAFFIC_RECEIVED', acc:accumulate('upstream_traffic_received_' .. upstream_server_name, upstream['received']), nil, src))
+          table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_TRAFFIC_SENT', acc:accumulate('upstream_traffic_sent_' .. upstream_server_name, upstream['sent'])/(params.pollInterval/1000), nil, src))
+          table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_TRAFFIC_RECEIVED', acc:accumulate('upstream_traffic_received_' .. upstream_server_name, upstream['received'])/(params.pollInterval/1000), nil, src))
           table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_FAILED_CHECKS', upstream['fails'], nil, src))
           table.insert(metrics, pack('NGINX_PLUS_UPSTREAM_DOWNTIME', upstream['downtime'], nil, src))
           if upstream['health_checks']['checks'] and tonumber(upstream['health_checks']['checks']) > 0 then
@@ -211,9 +211,9 @@ function plugin:onParseValues(data)
       if setContains(self.tcpzones_to_check, TCP_zone_name) then
         local src = self.source .. '.' .. string.gsub(TCP_zone_name, ":", "_")
         table.insert(metrics, pack('NGINX_PLUS_TCPZONE_CURRENT_CONNECTIONS', TCP_zone['processing'], nil, src))
-        table.insert(metrics, pack('NGINX_PLUS_TCPZONE_CONNECTIONS', acc:accumulate('tcpzone_connections_' .. TCP_zone_name, TCP_zone['connections']), nil, src))
-        table.insert(metrics, pack('NGINX_PLUS_TCPZONE_TRAFFIC_SENT', acc:accumulate('tcpzone_traffic_sent_' .. TCP_zone_name, TCP_zone['sent']), nil, src))
-        table.insert(metrics, pack('NGINX_PLUS_TCPZONE_TRAFFIC_RECEIVED', acc:accumulate('tcpzone_traffic_received_' .. TCP_zone_name, TCP_zone['received']), nil, src))
+        table.insert(metrics, pack('NGINX_PLUS_TCPZONE_CONNECTIONS', acc:accumulate('tcpzone_connections_' .. TCP_zone_name, TCP_zone['connections'])/(params.pollInterval/1000), nil, src))
+        table.insert(metrics, pack('NGINX_PLUS_TCPZONE_TRAFFIC_SENT', acc:accumulate('tcpzone_traffic_sent_' .. TCP_zone_name, TCP_zone['sent'])/(params.pollInterval/1000), nil, src))
+        table.insert(metrics, pack('NGINX_PLUS_TCPZONE_TRAFFIC_RECEIVED', acc:accumulate('tcpzone_traffic_received_' .. TCP_zone_name, TCP_zone['received'])/(params.pollInterval/1000), nil, src))
       end
     end
     for TCP_upstream_name, TCP_upstream_array in pairs(stats.stream.upstreams) do
@@ -244,19 +244,19 @@ function plugin:onParseValues(data)
               end
             end
           end
-          table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_CONNECTIONS', acc:accumulate('tcpup_connections_' .. TCP_upstream_server_name, TCP_upstream['connections']), nil, src))
+          table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_CONNECTIONS', acc:accumulate('tcpup_connections_' .. TCP_upstream_server_name, TCP_upstream['connections'])/(params.pollInterval/1000), nil, src))
           table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_ACTIVE_CONNECTIONS', TCP_upstream['active'], nil, src))
           if TCP_upstream['max_conns'] and tonumber(TCP_upstream['max_conns']) > 0 then
-            table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_PERC_USED_CONNECTIONS', tonumber(TCP_upstream['active'])/tonumber(TCP_upstream['max_conns']), nil, src))
+            table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_PERC_USED_CONNECTIONS', tonumber(TCP_upstream['active'])/tonumber(TCP_upstream['max_conns'])/(params.pollInterval/1000), nil, src))
           else
             table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_PERC_USED_CONNECTIONS', 0, nil, src))
           end
-          table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_TRAFFIC_SENT', acc:accumulate('tcpup_traffic_sent_' .. TCP_upstream_server_name, TCP_upstream['sent']), nil, src))
-          table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_TRAFFIC_RECEIVED', acc:accumulate('tcpup_traffic_received_' .. TCP_upstream_server_name, TCP_upstream['received']), nil, src))
+          table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_TRAFFIC_SENT', acc:accumulate('tcpup_traffic_sent_' .. TCP_upstream_server_name, TCP_upstream['sent'])/(params.pollInterval/1000), nil, src))
+          table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_TRAFFIC_RECEIVED', acc:accumulate('tcpup_traffic_received_' .. TCP_upstream_server_name, TCP_upstream['received'])/(params.pollInterval/1000), nil, src))
           table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_FAILED_CHECKS', TCP_upstream['fails'], nil, src))
           table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_DOWNTIME', TCP_upstream['downtime'], nil, src))
           if TCP_upstream['health_checks']['checks'] and tonumber(TCP_upstream['health_checks']['checks']) > 0 then
-            table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_PERC_FAILED', tonumber(TCP_upstream['health_checks']['fails'])/tonumber(TCP_upstream['health_checks']['checks']), nil, src))
+            table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_PERC_FAILED', tonumber(TCP_upstream['health_checks']['fails'])/tonumber(TCP_upstream['health_checks']['checks'])/(params.pollInterval/1000), nil, src))
           else
             table.insert(metrics, pack('NGINX_PLUS_TCPUPSTREAM_PERC_FAILED', 0, nil, src))
           end

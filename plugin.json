@@ -98,9 +98,9 @@
     {
      "title" : "Poll Interval",
       "name" : "pollInterval",
-      "description" : "The Poll Interval in milliseconds. Ex. 1000",
+      "description" : "The Poll Interval in milliseconds. Ex. 5000",
       "type" : "number",
-      "default" : 1000,
+      "default" : 5000,
       "required" : false
     },
     {
@@ -138,7 +138,7 @@
       }
     },
     {
-      "title" : "Fire Cache Cold Event?",
+      "title" : "Fire Cache Cold Event",
       "name" : "cache_cold_event",
       "description" : "If the cache changes from Warm to Cold or Cold to Warm, fire an event.",
       "type" : "boolean",
@@ -172,14 +172,14 @@
       }
     },
     {
-      "title" : "Fire Upstream Server State Change Event?",
+      "title" : "Fire Upstream Server State Change Event",
       "name" : "upstream_state_event",
       "description" : "If the upstream server state changes fire an event.",
       "type" : "boolean",
-      "default" : false
+      "default" : true
     },
     {
-      "title" : "Fire Upstream Server Failed Health Check Event?",
+      "title" : "Fire Upstream Server Failed Health Check Event",
       "name" : "upstream_failed_hc_event",
       "description" : "If the upstream server state changes fire an event.",
       "type" : "boolean",
@@ -195,14 +195,14 @@
       }
     },
     {
-      "title" : "Fire TCP Upstream Server State Change Event?",
+      "title" : "Fire TCP Upstream Server State Change Event",
       "name" : "tcpup_state_event",
       "description" : "If the upstream server state changes fire an event.",
       "type" : "boolean",
-      "default" : false
+      "default" : true
     },
     {
-      "title" : "Fire TCP Upstream Server Failed Health Check Event?",
+      "title" : "Fire TCP Upstream Server Failed Health Check Event",
       "name" : "tcpup_failed_hc_event",
       "description" : "If the upstream server state changes fire an event.",
       "type" : "boolean",
