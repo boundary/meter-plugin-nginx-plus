@@ -1056,24 +1056,28 @@ function Plugin:initialize(params, dataSource)
   self:on('error', function (err) self:error(err) end)
 end
 
-function Plugin:printError(title, err)
-  self:printEvent('error', title, err)
+function Plugin:printError(title, host, source, err)
+  self:printEvent('error', title, host, source, err)
 end
 
-function Plugin:printInfo(title, msg)
-  self:printEvent('info', title, msg)
+function Plugin:printInfo(title, host, source, msg)
+  self:printEvent('info', title, host, source, msg)
 end
 
-function Plugin:printWarn(title, msg)
-  self:printEvent('warn', title, msg)
+function Plugin:printWarn(title, host, source, msg)
+  self:printEvent('warn', title, host, source, msg)
 end
 
-function Plugin:printCritical(title, msg)
-  self:printEvent('critical', title, msg)
+function Plugin:printCritical(title, host, source, msg)
+  self:printEvent('critical', title, host, source, msg)
 end
 
-function Plugin.formatMessage(name, version, title, msg)
-  return string.format('%s version %s-%s|m:%s', name, version, title, msg)
+function Plugin.formatMessage(name, version, title, host, source, msg)
+  if title and title ~= "" then title = '-'..title else title = "" end
+  if msg and msg ~= "" then msg = '|m:'..msg else msg = "" end
+  if host and host ~= "" then host = '|h:'..host else host = "" end
+  if source and source ~= "" then source = '|s:'..source else source = "" end
+  return string.format('%s version %s%s%s%s%s', name, version, title, msg, host, source)
 end
 
 function Plugin.formatTags(tags)
@@ -1084,8 +1088,8 @@ function Plugin.formatTags(tags)
   return table.concat(merge({'lua', 'plugin'}, tags), ',')
 end
 
-function Plugin:printEvent(eventType, title, msg)
-  msg = Plugin.formatMessage(self.name, self.version, title, msg)
+function Plugin:printEvent(eventType, title, host, source, msg)
+  msg = Plugin.formatMessage(self.name, self.version, title, host, source, msg)
   local tags = Plugin.formatTags(self.tags)
   print(eventString(eventType, msg, tags))
 end
@@ -1093,8 +1097,8 @@ end
 --- Emit an event to the Boundary platform. 
 -- @type a string that represent the type of the event. It can be 'info', 'warning', 'critical', 'error'.
 -- @param msg an string message to send
-function Plugin:emitEvent(type, title, msg)
-  self:printEvent(type, title, msg)
+function Plugin:emitEvent(type, title, host, source, msg)
+  self:printEvent(type, title, host, source, msg)
 end
 
 function Plugin:_isPoller(poller)
@@ -1110,12 +1114,12 @@ function Plugin:error(err)
   else
     msg = tostring(err)
   end
-  self:printError(self.source .. ' Error', msg)
+  self:printError(self.source .. ' Error', self.source, self.source, msg)
 end
 
 --- Run the plugin and start polling from the configured DataSource
 function Plugin:run()
-  self:printInfo(self.source .. ' Status', 'Up')
+  self:printInfo(self.source .. ' Status', self.source, self.source, 'Up')
   self.dataSource:run(function (...) self:parseValues(...) end)
 end
 
