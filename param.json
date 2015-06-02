@@ -1,6 +1,6 @@
 {
   "source" : "demoNginx",
-  "pollInterval" : 5000,
+  "pollInterval" : 5,
   "cache_cold_event" : true,
   "upstream_state_event" : true,
   "upstream_failed_hc_event" : true,
