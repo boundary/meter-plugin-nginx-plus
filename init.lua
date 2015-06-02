@@ -107,9 +107,9 @@ function plugin:onParseValues(data)
 
           if cold_change ~= 0 then
             if cache['cold'] then
-              plugin:printWarn('Cache Cold', self.source, src, string.format('Cache %s is now %s|h:%s|s:%s', cache_name, 'Cold'))
+              plugin:printWarn(cache_name .. ' Cache Cold', src, self.source, string.format('Cache %s is now %s|h:%s|s:%s', cache_name, 'Cold'))
             else
-              plugin:printInfo('Cache Cold', self.source, src, string.format('Cache %s is now %s|h:%s|s:%s', cache_name, 'Warm'))
+              plugin:printInfo(cache_name .. ' Cache Cold', src, self.source, string.format('Cache %s is now %s|h:%s|s:%s', cache_name, 'Warm'))
             end
           end
         end
@@ -158,17 +158,17 @@ function plugin:onParseValues(data)
 
             if state_change ~= 0 then
               if string.upper(upstream['state']) == 'UP' then
-                plugin:printInfo('Upstream State', self.source, src, string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
+                plugin:printInfo(upstream_server_name .. ' Upstream State', src, self.source, string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
               elseif string.upper(upstream['state']) == 'DRAINING' then
-                plugin:printWarn('Upstream State', self.source, src, string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
+                plugin:printWarn(upstream_server_name .. ' Upstream State', src, self.source, string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
               elseif string.upper(upstream['state']) == 'DOWN' then
-                plugin:printCritical('Upstream State', self.source, src, string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
+                plugin:printCritical(upstream_server_name .. ' Upstream State', src, self.source, string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
               elseif string.upper(upstream['state']) == 'UNAVAIL' then
-                plugin:printError('Upstream State', self.source, src, string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
+                plugin:printError(upstream_server_name .. ' Upstream State', src, self.source, string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
               elseif string.upper(upstream['state']) == 'UNHEALTHY' then
-                plugin:printWarn('Upstream State', self.source, src, string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
+                plugin:printWarn(upstream_server_name .. ' Upstream State', src, self.source, string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
               else
-                plugin:printError('Upstream State', self.source, src, string.format('Upstream server %s is now %s', upstream_server_name, 'Unknown'))
+                plugin:printError(upstream_server_name .. ' Upstream State', src, self.source, string.format('Upstream server %s is now %s', upstream_server_name, 'Unknown'))
               end
             end
           end
@@ -200,9 +200,9 @@ function plugin:onParseValues(data)
 
             if health_check_change ~= 0 then
               if upstream['health_checks']['last_passed'] then
-                plugin:printInfo('Upstream Health Check', self.source, src, string.format('Upstream server %s %s its last health check', upstream_server_name, 'passed'))
+                plugin:printInfo(upstream_server_name .. ' Upstream Health Check', src, self.source, string.format('Upstream server %s %s its last health check', upstream_server_name, 'passed'))
               else
-                plugin:printWarn('Upstream Health Check', self.source, src, string.format('Upstream server %s %s its last health check', upstream_server_name, 'failed'))
+                plugin:printWarn(upstream_server_name .. ' Upstream Health Check', src, self.source, string.format('Upstream server %s %s its last health check', upstream_server_name, 'failed'))
               end
             end
           end
@@ -232,17 +232,17 @@ function plugin:onParseValues(data)
 
             if state_change ~= 0 then
               if string.upper(TCP_upstream['state']) == 'UP' then
-                plugin:printInfo('TCP Upstream State', self.source, src, string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
+                plugin:printInfo(TCP_upstream_server_name .. ' TCP Upstream State', src, self.source, string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
               elseif string.upper(TCP_upstream['state']) == 'DRAINING' then
-                plugin:printWarn('TCP Upstream State', self.source, src, string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
+                plugin:printWarn(TCP_upstream_server_name .. ' TCP Upstream State', src, self.source, string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
               elseif string.upper(TCP_upstream['state']) == 'DOWN' then
-                plugin:printCritical('TCP Upstream State', self.source, src, string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
+                plugin:printCritical(TCP_upstream_server_name .. ' TCP Upstream State', src, self.source, string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
               elseif string.upper(TCP_upstream['state']) == 'UNAVAIL' then
-                plugin:printError('TCP Upstream State', self.source, src, string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
+                plugin:printError(TCP_upstream_server_name .. ' TCP Upstream State', src, self.source, string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
               elseif string.upper(TCP_upstream['state']) == 'UNHEALTHY' then
-                plugin:printError('TCP Upstream State', self.source, src, string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
+                plugin:printError(TCP_upstream_server_name .. ' TCP Upstream State', src, self.source, string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
               else
-                plugin:printError('TCP Upstream State', self.source, src, string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, 'Unknown'))
+                plugin:printError(TCP_upstream_server_name .. ' TCP Upstream State', src, self.source, string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, 'Unknown'))
               end
             end
           end
@@ -268,9 +268,9 @@ function plugin:onParseValues(data)
 
             if health_check_change ~= 0 then
               if TCP_upstream['health_checks']['last_passed'] then
-                plugin:printInfo('TCP Upstream Health Check', self.source, src, string.format('TCP upstream server %s %s its last health check', TCP_upstream_server_name, 'passed'))
+                plugin:printInfo(TCP_upstream_server_name .. ' TCP Upstream Health Check', src, self.source, string.format('TCP upstream server %s %s its last health check', TCP_upstream_server_name, 'passed'))
               else
-                plugin:printWarn('TCP Upstream Health Check', self.source, src, string.format('TCP upstream server %s %s its last health check', TCP_upstream_server_name, 'failed'))
+                plugin:printWarn(TCP_upstream_server_name .. ' TCP Upstream Health Check', src, self.source, string.format('TCP upstream server %s %s its last health check', TCP_upstream_server_name, 'failed'))
               end
             end
           end
