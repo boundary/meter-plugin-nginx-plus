@@ -11,11 +11,6 @@ local gsplit = framework.string.gsplit
 local pack = framework.util.pack
 
 local params = framework.params or {}
-if framework.plugin_params.name == nil then
-  params.name = 'Boundary NGINX+ Plugin'
-  params.version = '1.1' 
-  params.tags = 'nginx+' 
-end
 
 function addToSet(set, key)
   if key and key ~= "" then
