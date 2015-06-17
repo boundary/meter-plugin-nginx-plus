@@ -10,10 +10,10 @@ A Boundary plugin that collects metrics from an Nginx Plus instance. This plugin
 |:----------|:-----:|:-------:|:-------:|:----:|
 | Supported |   v   |    v    |    v    |  v   |
 
-#### Boundary Meter Versions V4.0 Or Later
+#### Boundary Meter versions v4.2 or later 
 
-- To install new meter go to Settings->Installation or [see instructons|https://help.boundary.com/hc/en-us/sections/200634331-Installation]. 
-- To upgrade the meter to the latest version - [see instructons|https://help.boundary.com/hc/en-us/articles/201573102-Upgrading-the-Boundary-Meter].
+- To install new meter go to Settings->Installation or [see instructons](https://help.boundary.com/hc/en-us/sections/200634331-Installation). 
+- To upgrade the meter to the latest version - [see instructons](https://help.boundary.com/hc/en-us/articles/201573102-Upgrading-the-Boundary-Meter).
 
 ### Plugin Setup
 
@@ -22,7 +22,6 @@ To enable collecting metrics per virtual server, you need to enable zones. See N
     ```
     status_zone <your-zone-goes-here>;
     ```
-
 
 Once you make the update, reload your nginx configuration:
     ```bash
@@ -36,7 +35,7 @@ Run the following command, which shows the expected output:
     $ curl http://localhost:8000/status
     {JSON Output here}
     ```
-You can see an example of the output here|http://demo.nginx.com/status
+You can see an example of the output [here](http://demo.nginx.com/status)
 
 ### Plugin Configuration Fields
 
@@ -115,6 +114,15 @@ You can see an example of the output here|http://demo.nginx.com/status
 |Nginx TCP Upstream Conn Time |The average time to connect to the TCP upstream serverwn                                      |
 |Nginx TCP Upstream 1Byte Time|The average time to receive the first byte of data from the TCP upstream server               |
 |Nginx TCP Upstream Resp Time |The average time to receive the last byte of data from the TCP upstream server                |
+
+### Dashboards
+
+- Nginx Plus Summary
+- Nginx Plus Zones
+- Nginx Plus Upstreams
+- Nginx Plus TCP Zones
+- Nginx Plus TCP Upstreams
+- Nginx Plus Caches
 
 ### References
 
