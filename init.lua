@@ -1,5 +1,18 @@
+-- Copyright 2015 Boundary, Inc.
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--    http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+
 local framework = require('framework')
-local fs = require('fs')
 local json = require('json')
 local url = require('url')
 local table = require('table')
@@ -7,24 +20,23 @@ local Plugin  = framework.Plugin
 local WebRequestDataSource = framework.WebRequestDataSource
 local Accumulator = framework.Accumulator
 local auth = framework.util.auth
-local gsplit = framework.string.gsplit
 local pack = framework.util.pack
 
 local params = framework.params or {}
 
-function addToSet(set, key)
+local function addToSet(set, key)
   if key and key ~= "" then
     set[key] = true
   end
 end
 
-function removeFromSet(set, key)
+local function removeFromSet(set, key)
   if key and key ~= "" then
     set[key] = nil
   end
 end
 
-function setContains(set, key)
+local function setContains(set, key)
   if set then
     return set[key] ~= nil
   else
@@ -287,3 +299,4 @@ function plugin:onParseValues(data)
 end
 
 plugin:run()
+
