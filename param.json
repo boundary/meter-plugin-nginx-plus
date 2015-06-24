@@ -1,5 +1,5 @@
 {
-  "source" : "demoNginx",
+  "source" : "Demo NGINX",
   "pollInterval" : 5,
   "cache_cold_event" : true,
   "upstream_state_event" : true,
