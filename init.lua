@@ -13,7 +13,6 @@
 -- limitations under the License.
 
 local framework = require('framework')
-local fs = require('fs')
 local json = require('json')
 local url = require('url')
 local table = require('table')
@@ -21,24 +20,23 @@ local Plugin  = framework.Plugin
 local WebRequestDataSource = framework.WebRequestDataSource
 local Accumulator = framework.Accumulator
 local auth = framework.util.auth
-local gsplit = framework.string.gsplit
 local pack = framework.util.pack
 
 local params = framework.params or {}
 
-function addToSet(set, key)
+local function addToSet(set, key)
   if key and key ~= "" then
     set[key] = true
   end
 end
 
-function removeFromSet(set, key)
+local function removeFromSet(set, key)
   if key and key ~= "" then
     set[key] = nil
   end
 end
 
-function setContains(set, key)
+local function setContains(set, key)
   if set then
     return set[key] ~= nil
   else
