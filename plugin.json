@@ -2,7 +2,7 @@
   "name" : "Boundary NGINX+ Plugin",
   "version" : "0.9.1",
   "meterVersionRequired" : "4.2.0-611",
-  "os" : [ "Linux", "Windows", "SmartOS", "OS X" ],
+  "unsupportedPlatforms" : [ ],
   "tags" : "nginx+",
   "description": "Boundary Nginx Plus Plugin - Displays important nginx plus metrics",
   "icon" : "icon.png",
