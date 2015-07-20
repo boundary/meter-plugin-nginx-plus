@@ -77,7 +77,8 @@ function plugin:onParseValues(data)
   local metrics = {}
 
   local stats = parseJson(data)
-  if stats then
+  if not stats then do return end end
+
     local handled = stats['connections']['accepted'] - stats['connections']['dropped']
     local requests = stats['requests']['total']
     local reqs_per_connection = (handled > 0 and requests/handled) or 0
@@ -281,7 +282,6 @@ function plugin:onParseValues(data)
         end
       end
     end
-  end
 
   return metrics 
 end
