@@ -51,7 +51,7 @@ local ds = WebRequestDataSource:new(options)
 local acc = Accumulator:new()
 local plugin = Plugin:new(params, ds)
 
-for _, server_zone in pairs(server_zones) do
+--[[for _, server_zone in pairs(server_zones) do
   addToSet(plugin.zones_to_check, server_zone)
 end
 for _, TCP_server_zone in pairs(TCP_server_zones) do
@@ -65,7 +65,7 @@ for _, upstream in pairs(upstreams) do
 end
 for _, TCP_upstream in pairs(TCP_upstreams) do
   addToSet(plugin.tcpupstreams_to_check, TCP_upstream)
-end
+end]]
 
 local function parseJson(body)
     local parsed
