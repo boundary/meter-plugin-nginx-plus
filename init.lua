@@ -38,17 +38,11 @@ local function setContains(set, key)
   end
 end
 
-local server_zones = {}
-local TCP_server_zones = {}
-local caches = {}
-local upstreams = {}
-local TCP_upstreams = {}
-
-server_zones = params.zones or server_zones
-TCP_server_zones = params.tcpzones or TCP_server_zones
-caches = params.caches or caches
-upstreams = params.upstreams or upstreams
-TCP_upstreams = params.tcpupstreams or TCP_upstreams
+local server_zones = params.zones or {} 
+local TCP_server_zones = params.tcpzones or {} 
+local caches = params.caches or {} 
+local upstreams = params.upstreams or {} 
+local TCP_upstreams = params.tcpupstreams or {} 
 
 local options = url.parse(params.url)
 options.auth = auth(params.username, params.password) 
