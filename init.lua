@@ -30,12 +30,6 @@ local function addToSet(set, key)
   end
 end
 
-local function removeFromSet(set, key)
-  if key and key ~= "" then
-    set[key] = nil
-  end
-end
-
 local function setContains(set, key)
   if set then
     return set[key] ~= nil
