@@ -35,6 +35,14 @@ local function setContains(set, key)
   end
 end
 
+local state_to_event_map = {
+  up = 'info',
+  draining = 'warn',
+  down = 'critical',
+  unavail = 'error',
+  unhealthy = 'warn'
+}
+
 local caches = params.caches or {} 
 local server_zones = params.zones or {} 
 local TCP_server_zones = params.tcpzones or {} 
@@ -66,7 +74,6 @@ function plugin:onParseValues(data)
   local success, stats = parseJson(data)
   if not success then do return end end
 
-  local connections = stats.connections
   local handled = stats['connections']['accepted'] - stats['connections']['dropped']
   local requests = stats['requests']['total']
   local reqs_per_connection = ratio(requests, handled)
@@ -140,7 +147,7 @@ function plugin:onParseValues(data)
         if params.upstream_state_event then
           local state_change = acc('upstream_states_' .. upstream_server_name, state)
           if state_change ~= 0 then
-            local eventType = (upstream['state'] == 'up' and 'info') or (upstream['state'] == 'draining' and 'warn') or (upstream['state'] == 'down' and 'critical') or (upstream['state'] == 'unavail' and 'error') or (upstream['state'] == 'unhealthy' and 'warn') or 'error' 
+            local eventType = state_to_event_map[upstream['state']] or 'error'
             self:emitEvent(eventType, 'Upstream ' .. upstream_server_name .. ' ' .. upstream['state'], src, self.source, string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
           end
         end
@@ -198,22 +205,8 @@ function plugin:onParseValues(data)
         -- tcpup_state_event
         if params.tcpup_state_event then
           local state_change = acc('TCP_upstream_states_' .. TCP_upstream_server_name, state)
-          local state_change_events = {
-            UP = 'info',
-            DRAINING = 'warn',
-            DOWN = 'critical',
-            UNAVAIL = 'error',
-            UNHEALTHY = 'error'
-          }
-
           if state_change ~= 0 then
-            local state = string.upper(TCP_upstream['state']) 
-            local eventType = state_change_events[state] 
-            state = state_change_events[state]
-            if not eventType then
-              eventType = 'error'
-              state = 'Unknown'
-            end
+            local eventType = state_to_event_map[TCP_upstream['state']] or 'error'
             self:emitEvent(eventType, 'TCP Upstream ' .. TCP_upstream_server_name .. ' ' .. TCP_upstream['state'], src, self.source, string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
           end
         end
