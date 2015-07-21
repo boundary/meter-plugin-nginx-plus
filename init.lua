@@ -235,21 +235,22 @@ function plugin:onParseValues(data)
         metric('NGINX_PLUS_TCPUPSTREAM_STATE', state, nil, src)
         if params.tcpup_state_event then
           local state_change = acc:accumulate('TCP_upstream_states_' .. TCP_upstream_server_name, state)
+          local state_change_events = {
+            UP = 'info',
+            DRAINING = 'warn',
+            DOWN = 'critical',
+            UNAVAIL = 'error',
+            UNHEALTHY = 'error'
+          }
 
           if state_change ~= 0 then
-            if string.upper(TCP_upstream['state']) == 'UP' then
-              plugin:printInfo('TCP Upstream ' .. TCP_upstream_server_name .. ' ' .. TCP_upstream['state'], src, self.source, string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
-            elseif string.upper(TCP_upstream['state']) == 'DRAINING' then
-              plugin:printWarn('TCP Upstream ' .. TCP_upstream_server_name .. ' ' .. TCP_upstream['state'], src, self.source, string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
-            elseif string.upper(TCP_upstream['state']) == 'DOWN' then
-              plugin:printCritical('TCP Upstream ' .. TCP_upstream_server_name .. ' ' .. TCP_upstream['state'], src, self.source, string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
-            elseif string.upper(TCP_upstream['state']) == 'UNAVAIL' then
-              plugin:printError('TCP Upstream ' .. TCP_upstream_server_name .. ' ' .. TCP_upstream['state'], src, self.source, string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
-            elseif string.upper(TCP_upstream['state']) == 'UNHEALTHY' then
-              plugin:printError('TCP Upstream ' .. TCP_upstream_server_name .. ' ' .. TCP_upstream['state'], src, self.source, string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
-            else
-              plugin:printError('TCP Upstream ' .. TCP_upstream_server_name .. ' ' .. TCP_upstream['state'], src, self.source, string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, 'Unknown'))
+            local state = string.upper(TCP_upstream['state']) 
+            local eventType = state_change_events[state] 
+            if not eventType then
+              eventType = 'error'
+              state = 'Unknown'
             end
+            self:emitEvent(eventType, 'TCP Upstream ' .. TCP_upstream_server_name .. ' ' .. TCP_upstream['state'], src, self.source, string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
           end
         end
         metric('NGINX_PLUS_TCPUPSTREAM_CONNECTIONS', acc:accumulate('tcpup_connections_' .. TCP_upstream_server_name, TCP_upstream['connections'])/(params.pollInterval/1000), nil, src)
