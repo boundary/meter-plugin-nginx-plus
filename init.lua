@@ -48,7 +48,11 @@ local options = url.parse(params.url)
 options.auth = auth(params.username, params.password) 
 options.wait_for_end = true
 local ds = WebRequestDataSource:new(options)
-local acc = Accumulator:new()
+local _acc = Accumulator:new()
+function acc(key, value)
+  return _acc:accumulate(key, value)
+end
+
 local plugin = Plugin:new(params, ds)
 
 --[[for _, server_zone in pairs(server_zones) do
@@ -68,9 +72,7 @@ for _, TCP_upstream in pairs(TCP_upstreams) do
 end]]
 
 local function parseJson(body)
-    local parsed
-    pcall(function () parsed = json.parse(body) end)
-    return parsed 
+  return pcall(json.parse, body)
 end
 
 local function ipack(metrics, ...)
@@ -83,8 +85,8 @@ function plugin:onParseValues(data)
     ipack(metrics, ...)
   end
 
-  local stats = parseJson(data)
-  if not stats then do return end end
+  local success, stats = parseJson(data)
+  if not success then do return end end
 
   local connections = stats.connections
   local handled = connections.accepted - connections.dropped
@@ -93,9 +95,9 @@ function plugin:onParseValues(data)
 
   metrics['NGINX_PLUS_ACTIVE_CONNECTIONS'] = stats['connections']['active'] + stats['connections']['idle']
   metrics['NGINX_PLUS_WAITING'] = stats['connections']['idle']
-  metrics['NGINX_PLUS_HANDLED'] = acc:accumulate('handled', handled)/(params.pollInterval/1000)
+  metrics['NGINX_PLUS_HANDLED'] = acc('handled', handled)/(params.pollInterval/1000)
   metrics['NGINX_PLUS_NOT_HANDLED'] = stats['connections']['dropped']
-  metrics['NGINX_PLUS_REQUESTS'] = acc:accumulate('requests', requests)/(params.pollInterval/1000)
+  metrics['NGINX_PLUS_REQUESTS'] = acc('requests', requests)/(params.pollInterval/1000)
   metrics['NGINX_PLUS_CURRENT_REQUESTS'] = stats['requests']['current']
   metrics['NGINX_PLUS_REQUESTS_PER_CONNECTION'] = reqs_per_connection
   metrics['NGINX_PLUS_UPTIME'] = tonumber(stats['timestamp']) - tonumber(stats['load_timestamp'])
@@ -107,7 +109,7 @@ function plugin:onParseValues(data)
 
       metric('NGINX_PLUS_CACHE_COLD', cache['cold'] and 1 or 0, nil, src)
       if params.cache_cold_event then
-        local cold_change = acc:accumulate('caches_cold_' .. cache_name, cache['cold'] and 1 or 0)
+        local cold_change = acc('caches_cold_' .. cache_name, cache['cold'] and 1 or 0)
 
         if cold_change ~= 0 then
           if cache['cold'] then
@@ -138,15 +140,15 @@ function plugin:onParseValues(data)
     if setContains(self.zones_to_check, zone_name) then
       local src = self.source .. '.' .. string.gsub(zone_name, ":", "_")
       metric('NGINX_PLUS_ZONE_CURRENT_REQUESTS', zone['processing'], nil, src)
-      metric('NGINX_PLUS_ZONE_REQUESTS', acc:accumulate('zone_requests_' .. zone_name, zone['requests'])/(params.pollInterval/1000), nil, src)
-      metric('NGINX_PLUS_ZONE_1XX_RESPONSES', acc:accumulate('zone_1xx_responses_' .. zone_name, zone['responses']['1xx'])/(params.pollInterval/1000), nil, src)
-      metric('NGINX_PLUS_ZONE_2XX_RESPONSES', acc:accumulate('zone_2xx_responses_' .. zone_name, zone['responses']['2xx'])/(params.pollInterval/1000), nil, src)
-      metric('NGINX_PLUS_ZONE_3XX_RESPONSES', acc:accumulate('zone_3xx_responses_' .. zone_name, zone['responses']['3xx'])/(params.pollInterval/1000), nil, src)
-      metric('NGINX_PLUS_ZONE_4XX_RESPONSES', acc:accumulate('zone_4xx_responses_' .. zone_name, zone['responses']['4xx'])/(params.pollInterval/1000), nil, src)
-      metric('NGINX_PLUS_ZONE_5XX_RESPONSES', acc:accumulate('zone_5xx_responses_' .. zone_name, zone['responses']['5xx'])/(params.pollInterval/1000), nil, src)
-      metric('NGINX_PLUS_ZONE_TOTAL_RESPONSES', acc:accumulate('zone_total_responses_' .. zone_name, zone['responses']['total'])/(params.pollInterval/1000), nil, src)
-      metric('NGINX_PLUS_ZONE_TRAFFIC_SENT', acc:accumulate('zone_traffic_sent_' .. zone_name, zone['sent'])/(params.pollInterval/1000), nil, src)
-      metric('NGINX_PLUS_ZONE_TRAFFIC_RECEIVED', acc:accumulate('zone_traffic_received_' .. zone_name, zone['received'])/(params.pollInterval/1000), nil, src)
+      metric('NGINX_PLUS_ZONE_REQUESTS', acc('zone_requests_' .. zone_name, zone['requests'])/(params.pollInterval/1000), nil, src)
+      metric('NGINX_PLUS_ZONE_1XX_RESPONSES', acc('zone_1xx_responses_' .. zone_name, zone['responses']['1xx'])/(params.pollInterval/1000), nil, src)
+      metric('NGINX_PLUS_ZONE_2XX_RESPONSES', acc('zone_2xx_responses_' .. zone_name, zone['responses']['2xx'])/(params.pollInterval/1000), nil, src)
+      metric('NGINX_PLUS_ZONE_3XX_RESPONSES', acc('zone_3xx_responses_' .. zone_name, zone['responses']['3xx'])/(params.pollInterval/1000), nil, src)
+      metric('NGINX_PLUS_ZONE_4XX_RESPONSES', acc('zone_4xx_responses_' .. zone_name, zone['responses']['4xx'])/(params.pollInterval/1000), nil, src)
+      metric('NGINX_PLUS_ZONE_5XX_RESPONSES', acc('zone_5xx_responses_' .. zone_name, zone['responses']['5xx'])/(params.pollInterval/1000), nil, src)
+      metric('NGINX_PLUS_ZONE_TOTAL_RESPONSES', acc('zone_total_responses_' .. zone_name, zone['responses']['total'])/(params.pollInterval/1000), nil, src)
+      metric('NGINX_PLUS_ZONE_TRAFFIC_SENT', acc('zone_traffic_sent_' .. zone_name, zone['sent'])/(params.pollInterval/1000), nil, src)
+      metric('NGINX_PLUS_ZONE_TRAFFIC_RECEIVED', acc('zone_traffic_received_' .. zone_name, zone['received'])/(params.pollInterval/1000), nil, src)
     end
   end
   for upstream_name, upstream_array in pairs(stats.upstreams) do
@@ -159,7 +161,7 @@ function plugin:onParseValues(data)
         local health_check = upstream['health_checks']['last_passed'] and 1 or 0
         metric('NGINX_PLUS_UPSTREAM_STATE', state, nil, src)
         if params.upstream_state_event then
-          local state_change = acc:accumulate('upstream_states_' .. upstream_server_name, state)
+          local state_change = acc('upstream_states_' .. upstream_server_name, state)
 
           if state_change ~= 0 then
             
@@ -178,28 +180,28 @@ function plugin:onParseValues(data)
             end
           end
         end
-        metric('NGINX_PLUS_UPSTREAM_REQUESTS', acc:accumulate('upstream_requests_' .. upstream_name, upstream['requests'])/(params.pollInterval/1000), nil, src)
-        metric('NGINX_PLUS_UPSTREAM_1XX_RESPONSES', acc:accumulate('upstream_1xx_responses_' .. upstream_server_name, upstream['responses']['1xx'])/(params.pollInterval/1000), nil, src)
-        metric('NGINX_PLUS_UPSTREAM_2XX_RESPONSES', acc:accumulate('upstream_2xx_responses_' .. upstream_server_name, upstream['responses']['2xx'])/(params.pollInterval/1000), nil, src)
-        metric('NGINX_PLUS_UPSTREAM_3XX_RESPONSES', acc:accumulate('upstream_3xx_responses_' .. upstream_server_name, upstream['responses']['3xx'])/(params.pollInterval/1000), nil, src)
-        metric('NGINX_PLUS_UPSTREAM_4XX_RESPONSES', acc:accumulate('upstream_4xx_responses_' .. upstream_server_name, upstream['responses']['4xx'])/(params.pollInterval/1000), nil, src)
-        metric('NGINX_PLUS_UPSTREAM_5XX_RESPONSES', acc:accumulate('upstream_5xx_responses_' .. upstream_server_name, upstream['responses']['5xx'])/(params.pollInterval/1000), nil, src)
-        metric('NGINX_PLUS_UPSTREAM_TOTAL_RESPONSES', acc:accumulate('upstream_total_responses_' .. upstream_server_name, upstream['responses']['total'])/(params.pollInterval/1000), nil, src)
+        metric('NGINX_PLUS_UPSTREAM_REQUESTS', acc('upstream_requests_' .. upstream_name, upstream['requests'])/(params.pollInterval/1000), nil, src)
+        metric('NGINX_PLUS_UPSTREAM_1XX_RESPONSES', acc('upstream_1xx_responses_' .. upstream_server_name, upstream['responses']['1xx'])/(params.pollInterval/1000), nil, src)
+        metric('NGINX_PLUS_UPSTREAM_2XX_RESPONSES', acc('upstream_2xx_responses_' .. upstream_server_name, upstream['responses']['2xx'])/(params.pollInterval/1000), nil, src)
+        metric('NGINX_PLUS_UPSTREAM_3XX_RESPONSES', acc('upstream_3xx_responses_' .. upstream_server_name, upstream['responses']['3xx'])/(params.pollInterval/1000), nil, src)
+        metric('NGINX_PLUS_UPSTREAM_4XX_RESPONSES', acc('upstream_4xx_responses_' .. upstream_server_name, upstream['responses']['4xx'])/(params.pollInterval/1000), nil, src)
+        metric('NGINX_PLUS_UPSTREAM_5XX_RESPONSES', acc('upstream_5xx_responses_' .. upstream_server_name, upstream['responses']['5xx'])/(params.pollInterval/1000), nil, src)
+        metric('NGINX_PLUS_UPSTREAM_TOTAL_RESPONSES', acc('upstream_total_responses_' .. upstream_server_name, upstream['responses']['total'])/(params.pollInterval/1000), nil, src)
         metric('NGINX_PLUS_UPSTREAM_ACTIVE_CONNECTIONS', upstream['active'], nil, src)
         if upstream['max_conns'] and tonumber(upstream['max_conns']) > 0 then
           metric('NGINX_PLUS_UPSTREAM_PERC_USED_CONNECTIONS', tonumber(upstream['active'])/tonumber(upstream['max_conns']), nil, src)
         else
           metric('NGINX_PLUS_UPSTREAM_PERC_USED_CONNECTIONS', 0, nil, src)
         end
-        metric('NGINX_PLUS_UPSTREAM_TRAFFIC_SENT', acc:accumulate('upstream_traffic_sent_' .. upstream_server_name, upstream['sent'])/(params.pollInterval/1000), nil, src)
-        metric('NGINX_PLUS_UPSTREAM_TRAFFIC_RECEIVED', acc:accumulate('upstream_traffic_received_' .. upstream_server_name, upstream['received'])/(params.pollInterval/1000), nil, src)
+        metric('NGINX_PLUS_UPSTREAM_TRAFFIC_SENT', acc('upstream_traffic_sent_' .. upstream_server_name, upstream['sent'])/(params.pollInterval/1000), nil, src)
+        metric('NGINX_PLUS_UPSTREAM_TRAFFIC_RECEIVED', acc('upstream_traffic_received_' .. upstream_server_name, upstream['received'])/(params.pollInterval/1000), nil, src)
         metric('NGINX_PLUS_UPSTREAM_FAILED_CHECKS', upstream['fails'], nil, src)
         metric('NGINX_PLUS_UPSTREAM_DOWNTIME', upstream['downtime'], nil, src)
         local health_checks_checks = upstream['health_checks']['checks']
         metric('NGINX_PLUS_UPSTREAM_PERC_FAILED', (health_checks_checks and health_checks_checks > 0 and upstream['health_checks']['fails']/health_checks_checks) or 0, nil, src)
         metric('NGINX_PLUS_UPSTREAM_HEALTHY', health_check, nil, src)
         if params.upstream_failed_hc_event then
-          local health_check_change = acc:accumulate('upstream_health_checks_' .. upstream_server_name, health_check)
+          local health_check_change = acc('upstream_health_checks_' .. upstream_server_name, health_check)
 
           if health_check_change ~= 0 then
             if upstream['health_checks']['last_passed'] then
@@ -216,9 +218,9 @@ function plugin:onParseValues(data)
     if setContains(self.tcpzones_to_check, TCP_zone_name) then
       local src = self.source .. '.' .. string.gsub(TCP_zone_name, ":", "_")
       metric('NGINX_PLUS_TCPZONE_CURRENT_CONNECTIONS', TCP_zone['processing'], nil, src)
-      metric('NGINX_PLUS_TCPZONE_CONNECTIONS', acc:accumulate('tcpzone_connections_' .. TCP_zone_name, TCP_zone['connections'])/(params.pollInterval/1000), nil, src)
-      metric('NGINX_PLUS_TCPZONE_TRAFFIC_SENT', acc:accumulate('tcpzone_traffic_sent_' .. TCP_zone_name, TCP_zone['sent'])/(params.pollInterval/1000), nil, src)
-      metric('NGINX_PLUS_TCPZONE_TRAFFIC_RECEIVED', acc:accumulate('tcpzone_traffic_received_' .. TCP_zone_name, TCP_zone['received'])/(params.pollInterval/1000), nil, src)
+      metric('NGINX_PLUS_TCPZONE_CONNECTIONS', acc('tcpzone_connections_' .. TCP_zone_name, TCP_zone['connections'])/(params.pollInterval/1000), nil, src)
+      metric('NGINX_PLUS_TCPZONE_TRAFFIC_SENT', acc('tcpzone_traffic_sent_' .. TCP_zone_name, TCP_zone['sent'])/(params.pollInterval/1000), nil, src)
+      metric('NGINX_PLUS_TCPZONE_TRAFFIC_RECEIVED', acc('tcpzone_traffic_received_' .. TCP_zone_name, TCP_zone['received'])/(params.pollInterval/1000), nil, src)
     end
   end
   for TCP_upstream_name, TCP_upstream_array in pairs(stats.stream.upstreams) do
@@ -231,7 +233,7 @@ function plugin:onParseValues(data)
         local health_check = TCP_upstream['health_checks']['last_passed'] and 1 or 0
         metric('NGINX_PLUS_TCPUPSTREAM_STATE', state, nil, src)
         if params.tcpup_state_event then
-          local state_change = acc:accumulate('TCP_upstream_states_' .. TCP_upstream_server_name, state)
+          local state_change = acc('TCP_upstream_states_' .. TCP_upstream_server_name, state)
           local state_change_events = {
             UP = 'info',
             DRAINING = 'warn',
@@ -251,15 +253,15 @@ function plugin:onParseValues(data)
             self:emitEvent(eventType, 'TCP Upstream ' .. TCP_upstream_server_name .. ' ' .. TCP_upstream['state'], src, self.source, string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
           end
         end
-        metric('NGINX_PLUS_TCPUPSTREAM_CONNECTIONS', acc:accumulate('tcpup_connections_' .. TCP_upstream_server_name, TCP_upstream['connections'])/(params.pollInterval/1000), nil, src)
+        metric('NGINX_PLUS_TCPUPSTREAM_CONNECTIONS', acc('tcpup_connections_' .. TCP_upstream_server_name, TCP_upstream['connections'])/(params.pollInterval/1000), nil, src)
         metric('NGINX_PLUS_TCPUPSTREAM_ACTIVE_CONNECTIONS', TCP_upstream['active'], nil, src)
         if TCP_upstream['max_conns'] and tonumber(TCP_upstream['max_conns']) > 0 then
           metric('NGINX_PLUS_TCPUPSTREAM_PERC_USED_CONNECTIONS', tonumber(TCP_upstream['active'])/tonumber(TCP_upstream['max_conns'])/(params.pollInterval/1000), nil, src)
         else
           metric('NGINX_PLUS_TCPUPSTREAM_PERC_USED_CONNECTIONS', 0, nil, src)
         end
-        metric('NGINX_PLUS_TCPUPSTREAM_TRAFFIC_SENT', acc:accumulate('tcpup_traffic_sent_' .. TCP_upstream_server_name, TCP_upstream['sent'])/(params.pollInterval/1000), nil, src)
-        metric('NGINX_PLUS_TCPUPSTREAM_TRAFFIC_RECEIVED', acc:accumulate('tcpup_traffic_received_' .. TCP_upstream_server_name, TCP_upstream['received'])/(params.pollInterval/1000), nil, src)
+        metric('NGINX_PLUS_TCPUPSTREAM_TRAFFIC_SENT', acc('tcpup_traffic_sent_' .. TCP_upstream_server_name, TCP_upstream['sent'])/(params.pollInterval/1000), nil, src)
+        metric('NGINX_PLUS_TCPUPSTREAM_TRAFFIC_RECEIVED', acc('tcpup_traffic_received_' .. TCP_upstream_server_name, TCP_upstream['received'])/(params.pollInterval/1000), nil, src)
         metric('NGINX_PLUS_TCPUPSTREAM_FAILED_CHECKS', TCP_upstream['fails'], nil, src)
         metric('NGINX_PLUS_TCPUPSTREAM_DOWNTIME', TCP_upstream['downtime'], nil, src)
         if TCP_upstream['health_checks']['checks'] and tonumber(TCP_upstream['health_checks']['checks']) > 0 then
@@ -269,7 +271,7 @@ function plugin:onParseValues(data)
         end
         metric('NGINX_PLUS_TCPUPSTREAM_HEALTHY', health_check, nil, src)
         if params.tcpup_failed_hc_event then
-          local health_check_change = acc:accumulate('TCP_upstream_health_checks_' .. TCP_upstream_server_name, health_check)
+          local health_check_change = acc('TCP_upstream_health_checks_' .. TCP_upstream_server_name, health_check)
 
           if health_check_change ~= 0 then
             if TCP_upstream['health_checks']['last_passed'] then
