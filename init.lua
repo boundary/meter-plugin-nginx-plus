@@ -173,13 +173,13 @@ function plugin:onParseValues(data)
         metric('NGINX_PLUS_UPSTREAM_PERC_FAILED', ratio(upstream['health_checks']['fails']/upstream['health_checks']['checks']), nil, src)
         metric('NGINX_PLUS_UPSTREAM_HEALTHY', health_check, nil, src)
 
-        -- Upstream failed hc event
+        -- Upstream failed health check event
         if params.upstream_failed_hc_event then
           local health_check_change = acc('upstream_health_checks_' .. upstream_server_name, health_check)
           if health_check_change ~= 0 then
             local passed =  upstream['health_checks']['last_passed'] and 'passed' or 'failed'
             local eventType = upstream['health_checks']['last_passed'] and 'info' or 'warn'
-            self:emitEvent(eventType, 'Upstream ' .. upstream_server_name .. (' Health Check Passed'):format(passed), src, self.source, ('Upstream server %s %s its last health check'):format(upstream_server_name, passed))
+            self:emitEvent(eventType, 'Upstream ' .. upstream_server_name .. (' Health Check %s'):format(passed), src, self.source, ('Upstream server %s %s its last health check'):format(upstream_server_name, passed))
           end
         end
       end
@@ -243,13 +243,10 @@ function plugin:onParseValues(data)
         -- tcpuup_failed_hc_event
         if params.tcpup_failed_hc_event then
           local health_check_change = acc('TCP_upstream_health_checks_' .. TCP_upstream_server_name, health_check)
-
           if health_check_change ~= 0 then
-            if TCP_upstream['health_checks']['last_passed'] then
-              plugin:printInfo('TCP Upstream ' .. TCP_upstream_server_name .. ' Health Check Passed', src, self.source, string.format('TCP upstream server %s %s its last health check', TCP_upstream_server_name, 'passed'))
-            else
-              plugin:printWarn('TCP Upstream ' .. TCP_upstream_server_name .. ' Health Check Failed', src, self.source, string.format('TCP upstream server %s %s its last health check', TCP_upstream_server_name, 'failed'))
-            end
+            local passed = TCP_upstream['health_checks']['last_passed'] and 'passed' or 'failed' 
+            local eventType = TCP_upstream['health_checks']['last_passed'] and 'info' or 'warn' 
+            self:emitEvent(eventType, 'TCP Upstream ' .. TCP_upstream_server_name .. (' Health Check %s'):format(passed), src, self.source, string.format('TCP upstream server %s %s its last health check', TCP_upstream_server_name, passed))
           end
         end
         metric('NGINX_PLUS_TCPUPSTREAM_CONNECT_TIME', TCP_upstream['connect_time'], nil, src)
