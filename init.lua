@@ -20,15 +20,12 @@ local Plugin  = framework.Plugin
 local WebRequestDataSource = framework.WebRequestDataSource
 local Accumulator = framework.Accumulator
 local auth = framework.util.auth
-local pack = framework.util.pack
+local ipack = framework.util.ipack
+local toSet = framework.table.toSet
+local parseJson = framework.util.parseJson
+local ratio = framework.util.ratio
 
 local params = framework.params or {}
-
-local function addToSet(set, key)
-  if key and key ~= "" then
-    set[key] = true
-  end
-end
 
 local function setContains(set, key)
   if set then
@@ -38,9 +35,9 @@ local function setContains(set, key)
   end
 end
 
+local caches = params.caches or {} 
 local server_zones = params.zones or {} 
 local TCP_server_zones = params.tcpzones or {} 
-local caches = params.caches or {} 
 local upstreams = params.upstreams or {} 
 local TCP_upstreams = params.tcpupstreams or {} 
 
@@ -54,37 +51,11 @@ function acc(key, value)
 end
 
 local plugin = Plugin:new(params, ds)
-
---[[for _, server_zone in pairs(server_zones) do
-  addToSet(plugin.zones_to_check, server_zone)
-end
-for _, TCP_server_zone in pairs(TCP_server_zones) do
-  addToSet(plugin.tcpzones_to_check, TCP_server_zone)
-end
-for _, cache in pairs(caches) do
-  addToSet(plugin.caches_to_check, cache)
-end
-for _, upstream in pairs(upstreams) do
-  addToSet(plugin.upstreams_to_check, upstream)
-end
-for _, TCP_upstream in pairs(TCP_upstreams) do
-  addToSet(plugin.tcpupstreams_to_check, TCP_upstream)
-end]]
-
-local function parseJson(body)
-  return pcall(json.parse, body)
-end
-
-local function ipack(metrics, ...)
-  table.insert(metrics, pack(...))  
-end
-
-local function ratio(x, y)
-  if y and tonumber(y) > 0 then
-    return x / y
-  end
-  return 0
-end
+plugin.zones_to_check = toSet(server_zones)
+plugin.tcpzones_to_check = toSet(TCP_server_zones)
+plugin.caches_to_check = toSet(caches)
+plugin.upstreams_to_check = toSet(upstreams)
+plugin.tcpupstreams_to_check = toSet(TCP_upstream)
 
 function plugin:onParseValues(data)
   local metrics = {}
@@ -118,6 +89,7 @@ function plugin:onParseValues(data)
 
       metric('NGINX_PLUS_CACHE_COLD', cache['cold'] and 1 or 0, nil, src)
 
+      -- Cache cold event
       if params.cache_cold_event then
         local cold_change = acc('caches_cold_' .. cache_name, cache['cold'] and 1 or 0)
 
@@ -138,6 +110,7 @@ function plugin:onParseValues(data)
     end
   end
 
+  -- Server Zones metrics
   for zone_name, zone in pairs(stats.server_zones) do
     if setContains(self.zones_to_check, zone_name) then
       local src = self.source .. '.' .. string.gsub(zone_name, ":", "_")
@@ -153,15 +126,20 @@ function plugin:onParseValues(data)
       metric('NGINX_PLUS_ZONE_TRAFFIC_RECEIVED', acc('zone_traffic_received_' .. zone_name, zone['received'])/(params.pollInterval/1000), nil, src)
     end
   end
+
+  -- Upstreams metrics
   for upstream_name, upstream_array in pairs(stats.upstreams) do
     if setContains(self.upstreams_to_check, upstream_name) then
       for _, upstream in pairs(upstream_array) do
         local backup = upstream['backup'] and ".b_" or "."
         local upstream_server_name = string.gsub(upstream_name, ":", "_") .. backup .. string.gsub(upstream['server'], ":", "_")
         local src = self.source .. '.' .. upstream_server_name
+
         local state = (string.upper(upstream['state']) == 'UP' and 0) or (string.upper(upstream['state']) == 'DRAINING' and 1) or (string.upper(upstream['state']) == 'DOWN' and 2) or (string.upper(upstream['state']) == 'UNAVAIL' and 3) or (string.upper(upstream['state']) == 'UNHEALTHY' and 4) or 5
         local health_check = upstream['health_checks']['last_passed'] and 1 or 0
         metric('NGINX_PLUS_UPSTREAM_STATE', state, nil, src)
+
+        -- Upstream state event
         if params.upstream_state_event then
           local state_change = acc('upstream_states_' .. upstream_server_name, state)
 
@@ -198,6 +176,7 @@ function plugin:onParseValues(data)
         metric('NGINX_PLUS_UPSTREAM_PERC_FAILED', ratio(upstream['health_checks']['fails']/upstream['health_checks']['checks']), nil, src)
         metric('NGINX_PLUS_UPSTREAM_HEALTHY', health_check, nil, src)
 
+        -- Upstream failed hc event
         if params.upstream_failed_hc_event then
           local health_check_change = acc('upstream_health_checks_' .. upstream_server_name, health_check)
           if health_check_change ~= 0 then
@@ -211,6 +190,8 @@ function plugin:onParseValues(data)
       end
     end
   end
+
+  -- TCP Zones
   for TCP_zone_name, TCP_zone in pairs(stats.stream.server_zones) do
     if setContains(self.tcpzones_to_check, TCP_zone_name) then
       local src = self.source .. '.' .. string.gsub(TCP_zone_name, ":", "_")
@@ -220,6 +201,8 @@ function plugin:onParseValues(data)
       metric('NGINX_PLUS_TCPZONE_TRAFFIC_RECEIVED', acc('tcpzone_traffic_received_' .. TCP_zone_name, TCP_zone['received'])/(params.pollInterval/1000), nil, src)
     end
   end
+
+  -- TCP Upstream
   for TCP_upstream_name, TCP_upstream_array in pairs(stats.stream.upstreams) do
     if setContains(self.tcpupstreams_to_check, TCP_upstream_name) then
       for _, TCP_upstream in pairs(TCP_upstream_array) do
@@ -229,6 +212,8 @@ function plugin:onParseValues(data)
         local state = (string.upper(TCP_upstream['state']) == 'UP' and 0) or (string.upper(TCP_upstream['state']) == 'DRAINING' and 1) or (string.upper(TCP_upstream['state']) == 'DOWN' and 2) or (string.upper(TCP_upstream['state']) == 'UNAVAIL' and 3) or (string.upper(TCP_upstream['state']) == 'UNHEALTHY' and 4) or 5
         local health_check = TCP_upstream['health_checks']['last_passed'] and 1 or 0
         metric('NGINX_PLUS_TCPUPSTREAM_STATE', state, nil, src)
+
+        -- tcpup_state_event
         if params.tcpup_state_event then
           local state_change = acc('TCP_upstream_states_' .. TCP_upstream_server_name, state)
           local state_change_events = {
@@ -259,6 +244,8 @@ function plugin:onParseValues(data)
         metric('NGINX_PLUS_TCPUPSTREAM_DOWNTIME', TCP_upstream['downtime'], nil, src)
         metric('NGINX_PLUS_TCPUPSTREAM_PERC_FAILED', ratio(TCP_upstream['health_checks']['fails'], TCP_upstream['health_checks']['checks'])/(params.pollInterval/1000), nil, src)
         metric('NGINX_PLUS_TCPUPSTREAM_HEALTHY', health_check, nil, src)
+
+        -- tcpuup_failed_hc_event
         if params.tcpup_failed_hc_event then
           local health_check_change = acc('TCP_upstream_health_checks_' .. TCP_upstream_server_name, health_check)
 
