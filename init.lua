@@ -132,29 +132,16 @@ function plugin:onParseValues(data)
         local upstream_server_name = string.gsub(upstream_name, ":", "_") .. backup .. string.gsub(upstream['server'], ":", "_")
         local src = self.source .. '.' .. upstream_server_name
 
-        local state = (string.upper(upstream['state']) == 'UP' and 0) or (string.upper(upstream['state']) == 'DRAINING' and 1) or (string.upper(upstream['state']) == 'DOWN' and 2) or (string.upper(upstream['state']) == 'UNAVAIL' and 3) or (string.upper(upstream['state']) == 'UNHEALTHY' and 4) or 5
+        local state = (upstream['state'] == 'up' and 0) or (upstream['state'] == 'draining' and 1) or (upstream['state'] == 'down' and 2) or (upstream['state'] == 'unavail' and 3) or (upstream['state'] == 'unhealthy' and 4) or 5
         local health_check = upstream['health_checks']['last_passed'] and 1 or 0
         metric('NGINX_PLUS_UPSTREAM_STATE', state, nil, src)
 
         -- Upstream state change event
         if params.upstream_state_event then
           local state_change = acc('upstream_states_' .. upstream_server_name, state)
-
           if state_change ~= 0 then
-            
-            if string.upper(upstream['state']) == 'UP' then
-              plugin:printInfo('Upstream ' .. upstream_server_name .. ' ' .. upstream['state'], src, self.source, string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
-            elseif string.upper(upstream['state']) == 'DRAINING' then
-              plugin:printWarn('Upstream ' .. upstream_server_name .. ' ' .. upstream['state'], src, self.source, string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
-            elseif string.upper(upstream['state']) == 'DOWN' then
-              plugin:printCritical('Upstream ' .. upstream_server_name .. ' ' .. upstream['state'], src, self.source, string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
-            elseif string.upper(upstream['state']) == 'UNAVAIL' then
-              plugin:printError('Upstream ' .. upstream_server_name .. ' ' .. upstream['state'], src, self.source, string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
-            elseif string.upper(upstream['state']) == 'UNHEALTHY' then
-              plugin:printWarn('Upstream ' .. upstream_server_name .. ' ' .. upstream['state'], src, self.source, string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
-            else
-              plugin:printError('Upstream ' .. upstream_server_name .. ' ' .. upstream['state'], src, self.source, string.format('Upstream server %s is now %s', upstream_server_name, 'Unknown'))
-            end
+            local eventType = (upstream['state'] == 'up' and 'info') or (upstream['state'] == 'draining' and 'warn') or (upstream['state'] == 'down' and 'critical') or (upstream['state'] == 'unavail' and 'error') or (upstream['state'] == 'unhealthy' and 'warn') or 'error' 
+            self:emitEvent(eventType, 'Upstream ' .. upstream_server_name .. ' ' .. upstream['state'], src, self.source, string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
           end
         end
         metric('NGINX_PLUS_UPSTREAM_REQUESTS', acc('upstream_requests_' .. upstream_name, upstream['requests'])/(params.pollInterval/1000), nil, src)
