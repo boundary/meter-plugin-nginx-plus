@@ -6,5 +6,6 @@
   "upstream_failed_hc_event" : true,
   "tcpup_state_event" : true,
   "tcpup_failed_hc_event" : true,
-  "url" : "http://demo.nginx.com/status"
+  "url" : "http://demo.nginx.com/status",
+  "zones" : ["zone1"]
 }
