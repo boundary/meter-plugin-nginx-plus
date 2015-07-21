@@ -79,6 +79,13 @@ local function ipack(metrics, ...)
   table.insert(metrics, pack(...))  
 end
 
+local function ratio(x, y)
+  if y and tonumber(y) > 0 then
+    return x / y
+  end
+  return 0
+end
+
 function plugin:onParseValues(data)
   local metrics = {}
   local metric = function (...)
@@ -91,7 +98,7 @@ function plugin:onParseValues(data)
   local connections = stats.connections
   local handled = connections.accepted - connections.dropped
   local requests = stats['requests']['total']
-  local reqs_per_connection = (handled > 0 and requests/handled) or 0
+  local reqs_per_connection = ratio(requests, handled)
 
   metrics['NGINX_PLUS_ACTIVE_CONNECTIONS'] = stats['connections']['active'] + stats['connections']['idle']
   metrics['NGINX_PLUS_WAITING'] = stats['connections']['idle']
@@ -120,11 +127,7 @@ function plugin:onParseValues(data)
         end
       end
       metric('NGINX_PLUS_CACHE_SIZE', cache['size'], nil, src)
-      if tonumber(cache['max_size']) == 0 then
-        metric('NGINX_PLUS_CACHE_USED', 0, nil, src)
-      else
-        metric('NGINX_PLUS_CACHE_USED', tonumber(cache['size'])/tonumber(cache['max_size']), nil, src)
-      end
+      metric('NGINX_PLUS_CACHE_USED', ratio(cache['size'], cache['max_size']), nil, src)
       metric('NGINX_PLUS_CACHE_SERVED', served, nil, src)
       metric('NGINX_PLUS_CACHE_WRITTEN', tonumber(cache['miss']['bytes_written'])+tonumber(cache['expired']['bytes_written'])+tonumber(cache['bypass']['bytes_written']), nil, src)
       metric('NGINX_PLUS_CACHE_BYPASSED', bypassed, nil, src)
@@ -188,21 +191,16 @@ function plugin:onParseValues(data)
         metric('NGINX_PLUS_UPSTREAM_5XX_RESPONSES', acc('upstream_5xx_responses_' .. upstream_server_name, upstream['responses']['5xx'])/(params.pollInterval/1000), nil, src)
         metric('NGINX_PLUS_UPSTREAM_TOTAL_RESPONSES', acc('upstream_total_responses_' .. upstream_server_name, upstream['responses']['total'])/(params.pollInterval/1000), nil, src)
         metric('NGINX_PLUS_UPSTREAM_ACTIVE_CONNECTIONS', upstream['active'], nil, src)
-        if upstream['max_conns'] and tonumber(upstream['max_conns']) > 0 then
-          metric('NGINX_PLUS_UPSTREAM_PERC_USED_CONNECTIONS', tonumber(upstream['active'])/tonumber(upstream['max_conns']), nil, src)
-        else
-          metric('NGINX_PLUS_UPSTREAM_PERC_USED_CONNECTIONS', 0, nil, src)
-        end
+        metric('NGINX_PLUS_UPSTREAM_PERC_USED_CONNECTIONS', ratio(upstream['active'], upstream['max_conns']), nil, src)
         metric('NGINX_PLUS_UPSTREAM_TRAFFIC_SENT', acc('upstream_traffic_sent_' .. upstream_server_name, upstream['sent'])/(params.pollInterval/1000), nil, src)
         metric('NGINX_PLUS_UPSTREAM_TRAFFIC_RECEIVED', acc('upstream_traffic_received_' .. upstream_server_name, upstream['received'])/(params.pollInterval/1000), nil, src)
         metric('NGINX_PLUS_UPSTREAM_FAILED_CHECKS', upstream['fails'], nil, src)
         metric('NGINX_PLUS_UPSTREAM_DOWNTIME', upstream['downtime'], nil, src)
-        local health_checks_checks = upstream['health_checks']['checks']
-        metric('NGINX_PLUS_UPSTREAM_PERC_FAILED', (health_checks_checks and health_checks_checks > 0 and upstream['health_checks']['fails']/health_checks_checks) or 0, nil, src)
+        metric('NGINX_PLUS_UPSTREAM_PERC_FAILED', ratio(upstream['health_checks']['fails']/upstream['health_checks']['checks']), nil, src)
         metric('NGINX_PLUS_UPSTREAM_HEALTHY', health_check, nil, src)
+
         if params.upstream_failed_hc_event then
           local health_check_change = acc('upstream_health_checks_' .. upstream_server_name, health_check)
-
           if health_check_change ~= 0 then
             if upstream['health_checks']['last_passed'] then
               plugin:printInfo('Upstream ' .. upstream_server_name .. ' Health Check Passed', src, self.source, string.format('Upstream server %s %s its last health check', upstream_server_name, 'passed'))
@@ -255,20 +253,12 @@ function plugin:onParseValues(data)
         end
         metric('NGINX_PLUS_TCPUPSTREAM_CONNECTIONS', acc('tcpup_connections_' .. TCP_upstream_server_name, TCP_upstream['connections'])/(params.pollInterval/1000), nil, src)
         metric('NGINX_PLUS_TCPUPSTREAM_ACTIVE_CONNECTIONS', TCP_upstream['active'], nil, src)
-        if TCP_upstream['max_conns'] and tonumber(TCP_upstream['max_conns']) > 0 then
-          metric('NGINX_PLUS_TCPUPSTREAM_PERC_USED_CONNECTIONS', tonumber(TCP_upstream['active'])/tonumber(TCP_upstream['max_conns'])/(params.pollInterval/1000), nil, src)
-        else
-          metric('NGINX_PLUS_TCPUPSTREAM_PERC_USED_CONNECTIONS', 0, nil, src)
-        end
+        metric('NGINX_PLUS_TCPUPSTREAM_PERC_USED_CONNECTIONS', ratio(TCP_upstream['active'], TCP_upstream['max_conns'])/(params.pollInterval/1000), nil, src)
         metric('NGINX_PLUS_TCPUPSTREAM_TRAFFIC_SENT', acc('tcpup_traffic_sent_' .. TCP_upstream_server_name, TCP_upstream['sent'])/(params.pollInterval/1000), nil, src)
         metric('NGINX_PLUS_TCPUPSTREAM_TRAFFIC_RECEIVED', acc('tcpup_traffic_received_' .. TCP_upstream_server_name, TCP_upstream['received'])/(params.pollInterval/1000), nil, src)
         metric('NGINX_PLUS_TCPUPSTREAM_FAILED_CHECKS', TCP_upstream['fails'], nil, src)
         metric('NGINX_PLUS_TCPUPSTREAM_DOWNTIME', TCP_upstream['downtime'], nil, src)
-        if TCP_upstream['health_checks']['checks'] and tonumber(TCP_upstream['health_checks']['checks']) > 0 then
-          metric('NGINX_PLUS_TCPUPSTREAM_PERC_FAILED', tonumber(TCP_upstream['health_checks']['fails'])/tonumber(TCP_upstream['health_checks']['checks'])/(params.pollInterval/1000), nil, src)
-        else
-          metric('NGINX_PLUS_TCPUPSTREAM_PERC_FAILED', 0, nil, src)
-        end
+        metric('NGINX_PLUS_TCPUPSTREAM_PERC_FAILED', ratio(TCP_upstream['health_checks']['fails'], TCP_upstream['health_checks']['checks'])/(params.pollInterval/1000), nil, src)
         metric('NGINX_PLUS_TCPUPSTREAM_HEALTHY', health_check, nil, src)
         if params.tcpup_failed_hc_event then
           local health_check_change = acc('TCP_upstream_health_checks_' .. TCP_upstream_server_name, health_check)
