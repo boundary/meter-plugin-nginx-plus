@@ -89,16 +89,13 @@ function plugin:onParseValues(data)
 
       metric('NGINX_PLUS_CACHE_COLD', cache['cold'] and 1 or 0, nil, src)
 
-      -- Cache cold event
+      -- Cache cold change event
       if params.cache_cold_event then
         local cold_change = acc('caches_cold_' .. cache_name, cache['cold'] and 1 or 0)
-
         if cold_change ~= 0 then
-          if cache['cold'] then
-            self:printWarn(cache_name .. ' Cache Cold', src, self.source, string.format('Cache %s is now %s|h:%s|s:%s', cache_name, 'Cold'))
-          else
-            plugin:printInfo(cache_name .. ' Cache Warm', src, self.source, string.format('Cache %s is now %s|h:%s|s:%s', cache_name, 'Warm'))
-          end
+          local cold = cache['cold'] and 'Cold' or 'Warm'
+          local eventType = cache['cold'] and 'warn' or 'info'
+          plugin:emitEvent(eventType, cache_name .. (' Cache %s'):format(cold), src, self.source, string.format('Cache %s is now %s|h:%s|s:%s', cache_name, cold))
         end
       end
       metric('NGINX_PLUS_CACHE_SIZE', cache['size'], nil, src)
