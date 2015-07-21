@@ -46,7 +46,7 @@ options.auth = auth(params.username, params.password)
 options.wait_for_end = true
 local ds = WebRequestDataSource:new(options)
 local _acc = Accumulator:new()
-function acc(key, value)
+local function acc(key, value)
   return _acc:accumulate(key, value)
 end
 
@@ -67,7 +67,7 @@ function plugin:onParseValues(data)
   if not success then do return end end
 
   local connections = stats.connections
-  local handled = connections.accepted - connections.dropped
+  local handled = stats['connections']['accepted'] - stats['connections']['dropped']
   local requests = stats['requests']['total']
   local reqs_per_connection = ratio(requests, handled)
 
@@ -95,7 +95,7 @@ function plugin:onParseValues(data)
         if cold_change ~= 0 then
           local cold = cache['cold'] and 'Cold' or 'Warm'
           local eventType = cache['cold'] and 'warn' or 'info'
-          plugin:emitEvent(eventType, cache_name .. (' Cache %s'):format(cold), src, self.source, string.format('Cache %s is now %s|h:%s|s:%s', cache_name, cold))
+          self:emitEvent(eventType, cache_name .. (' Cache %s'):format(cold), src, self.source, string.format('Cache %s is now %s|h:%s|s:%s', cache_name, cold))
         end
       end
       metric('NGINX_PLUS_CACHE_SIZE', cache['size'], nil, src)
@@ -136,7 +136,7 @@ function plugin:onParseValues(data)
         local health_check = upstream['health_checks']['last_passed'] and 1 or 0
         metric('NGINX_PLUS_UPSTREAM_STATE', state, nil, src)
 
-        -- Upstream state event
+        -- Upstream state change event
         if params.upstream_state_event then
           local state_change = acc('upstream_states_' .. upstream_server_name, state)
 
@@ -177,11 +177,9 @@ function plugin:onParseValues(data)
         if params.upstream_failed_hc_event then
           local health_check_change = acc('upstream_health_checks_' .. upstream_server_name, health_check)
           if health_check_change ~= 0 then
-            if upstream['health_checks']['last_passed'] then
-              plugin:printInfo('Upstream ' .. upstream_server_name .. ' Health Check Passed', src, self.source, string.format('Upstream server %s %s its last health check', upstream_server_name, 'passed'))
-            else
-              plugin:printWarn('Upstream ' .. upstream_server_name .. ' Health Check Failed', src, self.source, string.format('Upstream server %s %s its last health check', upstream_server_name, 'failed'))
-            end
+            local passed =  upstream['health_checks']['last_passed'] and 'passed' or 'failed'
+            local eventType = upstream['health_checks']['last_passed'] and 'info' or 'warn'
+            self:emitEvent(eventType, 'Upstream ' .. upstream_server_name .. (' Health Check Passed'):format(passed), src, self.source, ('Upstream server %s %s its last health check'):format(upstream_server_name, passed))
           end
         end
       end
