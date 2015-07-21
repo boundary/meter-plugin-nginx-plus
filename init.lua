@@ -107,14 +107,17 @@ function plugin:onParseValues(data)
   metrics['NGINX_PLUS_REQUESTS'] = acc('requests', requests)/(params.pollInterval/1000)
   metrics['NGINX_PLUS_CURRENT_REQUESTS'] = stats['requests']['current']
   metrics['NGINX_PLUS_REQUESTS_PER_CONNECTION'] = reqs_per_connection
-  metrics['NGINX_PLUS_UPTIME'] = tonumber(stats['timestamp']) - tonumber(stats['load_timestamp'])
+  metrics['NGINX_PLUS_UPTIME'] = stats['timestamp'] - stats['load_timestamp']
+
+  -- Caches metrics
   for cache_name, cache in pairs(stats.caches) do
     if setContains(self.caches_to_check, cache_name) then
       local src = self.source .. '.' .. string.gsub(cache_name, ":", "_")
-      local served = tonumber(cache['hit']['bytes'])+tonumber(cache['stale']['bytes'])+tonumber(cache['updating']['bytes'])+tonumber(cache['revalidated']['bytes'])
-      local bypassed = tonumber(cache['miss']['bytes'])+tonumber(cache['expired']['bytes'])+tonumber(cache['bypass']['bytes'])
+      local served = cache['hit']['bytes'] + cache['stale']['bytes'] + cache['updating']['bytes'] + cache['revalidated']['bytes']
+      local bypassed = cache['miss']['bytes'] + cache['expired']['bytes'] + cache['bypass']['bytes']
 
       metric('NGINX_PLUS_CACHE_COLD', cache['cold'] and 1 or 0, nil, src)
+
       if params.cache_cold_event then
         local cold_change = acc('caches_cold_' .. cache_name, cache['cold'] and 1 or 0)
 
@@ -129,13 +132,9 @@ function plugin:onParseValues(data)
       metric('NGINX_PLUS_CACHE_SIZE', cache['size'], nil, src)
       metric('NGINX_PLUS_CACHE_USED', ratio(cache['size'], cache['max_size']), nil, src)
       metric('NGINX_PLUS_CACHE_SERVED', served, nil, src)
-      metric('NGINX_PLUS_CACHE_WRITTEN', tonumber(cache['miss']['bytes_written'])+tonumber(cache['expired']['bytes_written'])+tonumber(cache['bypass']['bytes_written']), nil, src)
+      metric('NGINX_PLUS_CACHE_WRITTEN', cache['miss']['bytes_written'] + cache['expired']['bytes_written'] + cache['bypass']['bytes_written'], nil, src)
       metric('NGINX_PLUS_CACHE_BYPASSED', bypassed, nil, src)
-      if served+bypassed == 0 then
-        metric('NGINX_PLUS_CACHE_HIT_PERCENT', 0, nil, src)
-      else
-        metric('NGINX_PLUS_CACHE_HIT_PERCENT', served/(served+bypassed), nil, src)
-      end
+      metric('NGINX_PLUS_CACHE_HIT_PERCENT', ratio(served, served+bypassed), nil, src)
     end
   end
 
