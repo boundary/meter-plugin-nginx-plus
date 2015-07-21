@@ -195,11 +195,8 @@ function plugin:onParseValues(data)
         metric('NGINX_PLUS_UPSTREAM_TRAFFIC_RECEIVED', acc:accumulate('upstream_traffic_received_' .. upstream_server_name, upstream['received'])/(params.pollInterval/1000), nil, src)
         metric('NGINX_PLUS_UPSTREAM_FAILED_CHECKS', upstream['fails'], nil, src)
         metric('NGINX_PLUS_UPSTREAM_DOWNTIME', upstream['downtime'], nil, src)
-        if upstream['health_checks']['checks'] and tonumber(upstream['health_checks']['checks']) > 0 then
-          metric('NGINX_PLUS_UPSTREAM_PERC_FAILED', tonumber(upstream['health_checks']['fails'])/tonumber(upstream['health_checks']['checks']), nil, src)
-        else
-          metric('NGINX_PLUS_UPSTREAM_PERC_FAILED', 0, nil, src)
-        end
+        local health_checks_checks = upstream['health_checks']['checks']
+        metric('NGINX_PLUS_UPSTREAM_PERC_FAILED', (health_checks_checks and health_checks_checks > 0 and upstream['health_checks']['fails']/health_checks_checks) or 0, nil, src)
         metric('NGINX_PLUS_UPSTREAM_HEALTHY', health_check, nil, src)
         if params.upstream_failed_hc_event then
           local health_check_change = acc:accumulate('upstream_health_checks_' .. upstream_server_name, health_check)
@@ -246,6 +243,7 @@ function plugin:onParseValues(data)
           if state_change ~= 0 then
             local state = string.upper(TCP_upstream['state']) 
             local eventType = state_change_events[state] 
+            state = state_change_events[state]
             if not eventType then
               eventType = 'error'
               state = 'Unknown'
