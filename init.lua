@@ -65,6 +65,8 @@ plugin.caches_to_check = toSet(caches)
 plugin.upstreams_to_check = toSet(upstreams)
 plugin.tcpupstreams_to_check = toSet(TCP_upstream)
 
+local last_uptime = nil
+
 function plugin:onParseValues(data)
   local metrics = {}
   local metric = function (...)
@@ -85,7 +87,11 @@ function plugin:onParseValues(data)
   metrics['NGINX_PLUS_REQUESTS'] = acc('requests', requests)/(params.pollInterval/1000)
   metrics['NGINX_PLUS_CURRENT_REQUESTS'] = stats['requests']['current']
   metrics['NGINX_PLUS_REQUESTS_PER_CONNECTION'] = reqs_per_connection
-  metrics['NGINX_PLUS_UPTIME'] = stats['timestamp'] - stats['load_timestamp']
+  local current_uptime = stats['timestamp'] - stats['load_timestamp']
+  if last_uptime and current_uptime < last_uptime then
+    self:emitEvent('warn', 'Server uptime changed!', self.source, self.source)
+  end
+  last_uptime = current_uptime 
 
   -- Caches metrics
   for cache_name, cache in pairs(stats.caches) do
