@@ -43,12 +43,6 @@ local state_to_event_map = {
   unhealthy = 'warn'
 }
 
-local caches = params.caches or {} 
-local server_zones = params.zones or {} 
-local TCP_server_zones = params.tcpzones or {} 
-local upstreams = params.upstreams or {} 
-local TCP_upstreams = params.tcpupstreams or {} 
-
 local options = url.parse(params.url)
 options.auth = auth(params.username, params.password) 
 options.wait_for_end = true
@@ -59,11 +53,11 @@ local function acc(key, value)
 end
 
 local plugin = Plugin:new(params, ds)
-plugin.zones_to_check = toSet(server_zones)
-plugin.tcpzones_to_check = toSet(TCP_server_zones)
-plugin.caches_to_check = toSet(caches)
-plugin.upstreams_to_check = toSet(upstreams)
-plugin.tcpupstreams_to_check = toSet(TCP_upstream)
+plugin.caches_to_check = toSet(params.caches or {})
+plugin.zones_to_check = toSet(params.zones or {})
+plugin.tcpzones_to_check = toSet(params.tcpzones or {})
+plugin.upstreams_to_check = toSet(params.upstreams or {})
+plugin.tcpupstreams_to_check = toSet(params.tcpupstreams or {})
 
 local last_uptime = nil
 
