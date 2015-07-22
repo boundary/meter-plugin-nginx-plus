@@ -76,7 +76,7 @@
   "dashboards" : [
     {
       "name" : "Nginx Plus Summary",
-      "layout" : "d-w=3&d-h=2&d-pad=5&d-bg=none&d-g-NGINX_PLUS_HANDLED=1-0-1-1-t&d-g-NGINX_PLUS_NOT_HANDLED=1-0-1-1-b&d-g-NGINX_PLUS_ACTIVE_CONNECTIONS=1-1-1-1-t&d-g-NGINX_PLUS_WAITING=1-1-1-1-b&d-g-NGINX_PLUS_REQUESTS=2-1-1-1&d-g-NGINX_PLUS_CURRENT_REQUESTS=2-0-1-1-t&d-g-NGINX_PLUS_REQUESTS_PER_CONNECTION=2-0-1-1-b&d-sw-events=0-0-1-1&d-g-NGINX_PLUS_UPTIME=0-1-1-1"
+      "layout" : "d-g-NGINX_PLUS_HANDLED=2-1-1-1-t&d-g-NGINX_PLUS_NOT_HANDLED=2-1-1-1-b&d-g-NGINX_PLUS_CURRENT_REQUESTS=2-0-1-1-t&d-g-NGINX_PLUS_REQUESTS_PER_CONNECTION=2-0-1-1-b&d-g-NGINX_PLUS_REQUESTS=0-0-2-1&d-g-NGINX_PLUS_ACTIVE_CONNECTIONS=0-1-2-1-t&d-g-NGINX_PLUS_WAITING=0-1-2-1-b"
     },
     {
       "name" : "Nginx Plus Zones",
