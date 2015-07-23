@@ -43,12 +43,6 @@ local state_to_event_map = {
   unhealthy = 'warn'
 }
 
-local caches = params.caches or {} 
-local server_zones = params.zones or {} 
-local TCP_server_zones = params.tcpzones or {} 
-local upstreams = params.upstreams or {} 
-local TCP_upstreams = params.tcpupstreams or {} 
-
 local options = url.parse(params.url)
 options.auth = auth(params.username, params.password) 
 options.wait_for_end = true
@@ -59,11 +53,13 @@ local function acc(key, value)
 end
 
 local plugin = Plugin:new(params, ds)
-plugin.zones_to_check = toSet(server_zones)
-plugin.tcpzones_to_check = toSet(TCP_server_zones)
-plugin.caches_to_check = toSet(caches)
-plugin.upstreams_to_check = toSet(upstreams)
-plugin.tcpupstreams_to_check = toSet(TCP_upstream)
+plugin.caches_to_check = toSet(params.caches or {})
+plugin.zones_to_check = toSet(params.zones or {})
+plugin.tcpzones_to_check = toSet(params.tcpzones or {})
+plugin.upstreams_to_check = toSet(params.upstreams or {})
+plugin.tcpupstreams_to_check = toSet(params.tcpupstreams or {})
+
+local last_uptime = nil
 
 function plugin:onParseValues(data)
   local metrics = {}
@@ -85,7 +81,11 @@ function plugin:onParseValues(data)
   metrics['NGINX_PLUS_REQUESTS'] = acc('requests', requests)/(params.pollInterval/1000)
   metrics['NGINX_PLUS_CURRENT_REQUESTS'] = stats['requests']['current']
   metrics['NGINX_PLUS_REQUESTS_PER_CONNECTION'] = reqs_per_connection
-  metrics['NGINX_PLUS_UPTIME'] = stats['timestamp'] - stats['load_timestamp']
+  local current_uptime = stats['timestamp'] - stats['load_timestamp']
+  if last_uptime and current_uptime < last_uptime then
+    self:emitEvent('warn', 'Server uptime changed!', self.source, self.source)
+  end
+  last_uptime = current_uptime 
 
   -- Caches metrics
   for cache_name, cache in pairs(stats.caches) do
