@@ -13,9 +13,7 @@
 -- limitations under the License.
 
 local framework = require('framework')
-local json = require('json')
 local url = require('url')
-local table = require('table')
 local Plugin  = framework.Plugin
 local WebRequestDataSource = framework.WebRequestDataSource
 local Accumulator = framework.Accumulator
