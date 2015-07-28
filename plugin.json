@@ -104,19 +104,22 @@
       "name" : "url",
       "description" : "The URL endpoint of where the nginx statistics are hosted.",
       "type" : "string",
-      "default" : "http://127.0.0.1/status"
+      "default" : "http://127.0.0.1/status",
+      "required" : true
     },
     {
       "title" : "Username",
       "name" : "username",
       "description" : "If the endpoint is password protected, what username we should use when calling it.",
-      "type" : "string"
+      "type" : "string",
+      "required" : false
     },
     {
       "title" : "Password",
       "name" : "password",
       "description" : "If the endpoint is password protected, what password we should use when calling it.",
-      "type" : "password"
+      "type" : "password",
+      "required" : false
     },
     {
       "title": "Cache Filter",
@@ -210,7 +213,8 @@
       "title" : "Source",
       "name" : "source",
       "description" : "The Source to display in the legend for the nginx data.  It will default to the hostname of the server",
-      "type" : "string"
+      "type" : "string",
+      "required" : false
     }
   ]
 }
