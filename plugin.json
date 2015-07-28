@@ -99,21 +99,7 @@
     }
   ],
   "paramSchema" : [
-    {
-     "title" : "Poll Interval (ms)",
-      "name" : "pollInterval",
-      "description" : "The Poll Interval (in milliseconds) to poll for metrics. Ex. 5000",
-      "type" : "integer",
-      "default" : 5000,
-      "required" : false
-    },
-    {
-      "title" : "Source",
-      "name" : "source",
-      "description" : "The Source to display in the legend for the nginx data.  It will default to the hostname of the server",
-      "type" : "string"
-    },
-    {
+   {
       "title" : "Statistics URL",
       "name" : "url",
       "description" : "The URL endpoint of where the nginx statistics are hosted.",
@@ -211,6 +197,20 @@
       "description" : "If the upstream server state changes fire an event.",
       "type" : "boolean",
       "default" : false
+    },
+    {
+     "title" : "Poll Interval (ms)",
+      "name" : "pollInterval",
+      "description" : "The Poll Interval (in milliseconds) to poll for metrics. Ex. 5000",
+      "type" : "integer",
+      "default" : 5000,
+      "required" : false
+    },
+    {
+      "title" : "Source",
+      "name" : "source",
+      "description" : "The Source to display in the legend for the nginx data.  It will default to the hostname of the server",
+      "type" : "string"
     }
   ]
 }
