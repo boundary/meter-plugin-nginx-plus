@@ -26,7 +26,15 @@ local ratio = framework.util.ratio
 local params = framework.params or {}
 
 local function setContains(set, key)
-  if set then
+  --if set then
+   -- return set[key] ~= nil
+  --else
+   -- return true
+  --end
+  if count(set) == 0 then
+     return true
+  end
+   if set then
     return set[key] ~= nil
   else
     return true
@@ -86,8 +94,23 @@ function plugin:onParseValues(data)
   last_uptime = current_uptime 
 
   -- Caches metrics
+  --print("Cache Block Sstart here---------------------------")
   for cache_name, cache in pairs(stats.caches) do
-    if setContains(self.caches_to_check, cache_name) then
+    
+    local listOfCacheZones = {}
+      local cacheZones = ""
+      for _,v in pairs(params.caches) do
+            cacheZones = v
+      end
+      if isBlank(cacheZones) then
+       --empty
+      else
+          local listOfCacheZoneArrays = cacheZones:split(",")
+          for i = 1, #listOfCacheZoneArrays do
+             listOfCacheZones[listOfCacheZoneArrays[i]] = listOfCacheZoneArrays[i]
+          end
+      end
+    if setContains(listOfCacheZones, cache_name) then
       local src = self.source .. '.' .. string.gsub(cache_name, ":", "_")
       local served = cache['hit']['bytes'] + cache['stale']['bytes'] + cache['updating']['bytes'] + cache['revalidated']['bytes']
       local bypassed = cache['miss']['bytes'] + cache['expired']['bytes'] + cache['bypass']['bytes']
@@ -111,10 +134,26 @@ function plugin:onParseValues(data)
       metric('NGINX_PLUS_CACHE_HIT_PERCENT', ratio(served, served+bypassed), nil, src)
     end
   end
+ --print("Cache Block END here---------------------------")
+
+ --print("Server zone Block Sstart here---------------------------")
 
   -- Server Zones metrics
   for zone_name, zone in pairs(stats.server_zones) do
-    if setContains(self.zones_to_check, zone_name) then
+      local listOfZones = {}
+      local zones = ""
+      for _,v in pairs(params.zones) do
+            zones = v
+      end
+     if isBlank(zones) then
+       --empty 
+     else
+        local sepratedZonesArray = zones:split(",")
+        for i = 1, #sepratedZonesArray do
+               listOfZones[sepratedZonesArray[i]] = sepratedZonesArray[i]
+        end
+     end
+    if setContains(listOfZones, zone_name) then
       local src = self.source .. '.' .. string.gsub(zone_name, ":", "_")
       metric('NGINX_PLUS_ZONE_CURRENT_REQUESTS', zone['processing'], nil, src)
       metric('NGINX_PLUS_ZONE_REQUESTS', acc('zone_requests_' .. zone_name, zone['requests'])/(params.pollInterval/1000), nil, src)
@@ -128,6 +167,8 @@ function plugin:onParseValues(data)
       metric('NGINX_PLUS_ZONE_TRAFFIC_RECEIVED', acc('zone_traffic_received_' .. zone_name, zone['received'])/(params.pollInterval/1000), nil, src)
     end
   end
+
+--print("Server zone Block END  here---------------------------")
 
   -- Upstreams metrics
   for upstream_name, upstream_array in pairs(stats.upstreams) do
@@ -180,7 +221,20 @@ function plugin:onParseValues(data)
 
   -- TCP Zones
   for TCP_zone_name, TCP_zone in pairs(stats.stream.server_zones) do
-    if setContains(self.tcpzones_to_check, TCP_zone_name) then
+    local listOfTCPZones = {}
+      local tcpZones = ""
+      for _,v in pairs(params.tcpzones) do
+            tcpZones = v
+      end
+     if isBlank(tcpZones) then
+       --empty
+     else
+          local tcpZoneArray = tcpZones:split(",")
+          for i = 1, #tcpZoneArray do
+              listOfTCPZones[tcpZoneArray[i]] = tcpZoneArray[i]
+          end
+     end
+    if setContains(listOfTCPZones, TCP_zone_name) then
       local src = self.source .. '.' .. string.gsub(TCP_zone_name, ":", "_")
       metric('NGINX_PLUS_TCPZONE_CURRENT_CONNECTIONS', TCP_zone['processing'], nil, src)
       metric('NGINX_PLUS_TCPZONE_CONNECTIONS', acc('tcpzone_connections_' .. TCP_zone_name, TCP_zone['connections'])/(params.pollInterval/1000), nil, src)
@@ -236,6 +290,33 @@ function plugin:onParseValues(data)
 
   return metrics 
 end
-
+--count number of elements  found in array
+function count( tbl )
+  local count = 0
+  for _ in pairs( tbl ) do
+    count = count + 1
+    end
+  return count
+end
+--checking given string is empty
+function isBlank(x)
+  return not not tostring(x):find("^%s*$")
+end
+--Split string by comma
+function string:split( inSplitPattern, outResults )
+  if not outResults then
+    outResults = { }
+  end
+  local theStart = 1
+  local theSplitStart, theSplitEnd = string.find( self, inSplitPattern, theStart )
+  while theSplitStart do
+    table.insert( outResults, string.sub( self, theStart, theSplitStart-1 ) )
+    theStart = theSplitEnd + 1
+    theSplitStart, theSplitEnd = string.find( self, inSplitPattern, theStart )
+  end
+  table.insert( outResults, string.sub( self, theStart ) )
+  return outResults
+end
+ 
 plugin:run()
 
