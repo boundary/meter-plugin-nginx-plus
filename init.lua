@@ -94,7 +94,6 @@ function plugin:onParseValues(data)
   last_uptime = current_uptime 
 
   -- Caches metrics
-  --print("Cache Block Sstart here---------------------------")
   for cache_name, cache in pairs(stats.caches) do
     if setContains(getListOfZones(params.caches), cache_name) then
       local src = self.source .. '.' .. string.gsub(cache_name, ":", "_")
@@ -120,9 +119,8 @@ function plugin:onParseValues(data)
       metric('NGINX_PLUS_CACHE_HIT_PERCENT', ratio(served, served+bypassed), nil, src)
     end
   end
- --print("Cache Block END here---------------------------")
 
- --print("Server zone Block Sstart here---------------------------")
+
 
   -- Server Zones metrics
   for zone_name, zone in pairs(stats.server_zones) do
@@ -141,7 +139,6 @@ function plugin:onParseValues(data)
     end
   end
 
---print("Server zone Block END  here---------------------------")
 
   -- Upstreams metrics
   for upstream_name, upstream_array in pairs(stats.upstreams) do
@@ -203,52 +200,55 @@ function plugin:onParseValues(data)
     end
   end
 
+  
   -- TCP Upstream
   for TCP_upstream_name, TCP_upstream_array in pairs(stats.stream.upstreams) do
-    if setContains(self.tcpupstreams_to_check, TCP_upstream_name) then
-      for _, TCP_upstream in pairs(TCP_upstream_array) do
-        local backup = TCP_upstream['backup'] and ".b_" or "."
-        local TCP_upstream_server_name = string.gsub(TCP_upstream_name, ":", "_") .. backup .. string.gsub(TCP_upstream['server'], ":", "_")
-        local src = self.source .. '.' .. TCP_upstream_server_name
-        local state = (string.upper(TCP_upstream['state']) == 'UP' and 0) or (string.upper(TCP_upstream['state']) == 'DRAINING' and 1) or (string.upper(TCP_upstream['state']) == 'DOWN' and 2) or (string.upper(TCP_upstream['state']) == 'UNAVAIL' and 3) or (string.upper(TCP_upstream['state']) == 'UNHEALTHY' and 4) or 5
-        local health_check = TCP_upstream['health_checks']['last_passed'] and 1 or 0
-        metric('NGINX_PLUS_TCPUPSTREAM_STATE', state, nil, src)
+    if setContains(getListOfZones(params.tcpupstreams), TCP_upstream_name) then
+      for _, TCP_upstreams in pairs(TCP_upstream_array) do 
+        for _,TCP_upstream in pairs(TCP_upstreams) do
+          local backup = TCP_upstream['backup'] and ".b_" or "."
+          local TCP_upstream_server_name = string.gsub(TCP_upstream_name, ":", "_") .. backup .. string.gsub(TCP_upstream['server'], ":", "_")
+          local src = self.source .. '.' .. TCP_upstream_server_name
+          local state = (string.upper(TCP_upstream['state']) == 'UP' and 0) or (string.upper(TCP_upstream['state']) == 'DRAINING' and 1) or (string.upper(TCP_upstream['state']) == 'DOWN' and 2) or (string.upper(TCP_upstream['state']) == 'UNAVAIL' and 3) or (string.upper(TCP_upstream['state']) == 'UNHEALTHY' and 4) or 5
+          local health_check = TCP_upstream['health_checks']['last_passed'] and 1 or 0
+          metric('NGINX_PLUS_TCPUPSTREAM_STATE', state, nil, src)
 
         -- tcpup_state_event
-        if params.tcpup_state_event then
-          local state_change = acc('TCP_upstream_states_' .. TCP_upstream_server_name, state)
-          if state_change ~= 0 then
-            local eventType = state_to_event_map[TCP_upstream['state']] or 'error'
-            self:emitEvent(eventType, 'TCP Upstream ' .. TCP_upstream_server_name .. ' ' .. TCP_upstream['state'], src, self.source, string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
+          if params.tcpup_state_event then
+            local state_change = acc('TCP_upstream_states_' .. TCP_upstream_server_name, state)
+            if state_change ~= 0 then
+              local eventType = state_to_event_map[TCP_upstream['state']] or 'error'
+              self:emitEvent(eventType, 'TCP Upstream ' .. TCP_upstream_server_name .. ' ' .. TCP_upstream['state'], src, self.source, string.format('TCP upstream server %s is now %s', TCP_upstream_server_name, TCP_upstream['state']))
+            end
           end
-        end
-        metric('NGINX_PLUS_TCPUPSTREAM_CONNECTIONS', acc('tcpup_connections_' .. TCP_upstream_server_name, TCP_upstream['connections'])/(params.pollInterval/1000), nil, src)
-        metric('NGINX_PLUS_TCPUPSTREAM_ACTIVE_CONNECTIONS', TCP_upstream['active'], nil, src)
-        metric('NGINX_PLUS_TCPUPSTREAM_PERC_USED_CONNECTIONS', ratio(TCP_upstream['active'], TCP_upstream['max_conns'])/(params.pollInterval/1000), nil, src)
-        metric('NGINX_PLUS_TCPUPSTREAM_TRAFFIC_SENT', acc('tcpup_traffic_sent_' .. TCP_upstream_server_name, TCP_upstream['sent'])/(params.pollInterval/1000), nil, src)
-        metric('NGINX_PLUS_TCPUPSTREAM_TRAFFIC_RECEIVED', acc('tcpup_traffic_received_' .. TCP_upstream_server_name, TCP_upstream['received'])/(params.pollInterval/1000), nil, src)
-        metric('NGINX_PLUS_TCPUPSTREAM_FAILED_CHECKS', TCP_upstream['fails'], nil, src)
-        metric('NGINX_PLUS_TCPUPSTREAM_DOWNTIME', TCP_upstream['downtime'], nil, src)
-        metric('NGINX_PLUS_TCPUPSTREAM_PERC_FAILED', ratio(TCP_upstream['health_checks']['fails'], TCP_upstream['health_checks']['checks'])/(params.pollInterval/1000), nil, src)
-        metric('NGINX_PLUS_TCPUPSTREAM_HEALTHY', health_check, nil, src)
+          metric('NGINX_PLUS_TCPUPSTREAM_CONNECTIONS', acc('tcpup_connections_' .. TCP_upstream_server_name, TCP_upstream['connections'])/(params.pollInterval/1000), nil, src)
+          metric('NGINX_PLUS_TCPUPSTREAM_ACTIVE_CONNECTIONS', TCP_upstream['active'], nil, src)
+          metric('NGINX_PLUS_TCPUPSTREAM_PERC_USED_CONNECTIONS', ratio(TCP_upstream['active'], TCP_upstream['max_conns'])/(params.pollInterval/1000), nil, src)
+          metric('NGINX_PLUS_TCPUPSTREAM_TRAFFIC_SENT', acc('tcpup_traffic_sent_' .. TCP_upstream_server_name, TCP_upstream['sent'])/(params.pollInterval/1000), nil, src)
+          metric('NGINX_PLUS_TCPUPSTREAM_TRAFFIC_RECEIVED', acc('tcpup_traffic_received_' .. TCP_upstream_server_name, TCP_upstream['received'])/(params.pollInterval/1000), nil, src)
+          metric('NGINX_PLUS_TCPUPSTREAM_FAILED_CHECKS', TCP_upstream['fails'], nil, src)
+          metric('NGINX_PLUS_TCPUPSTREAM_DOWNTIME', TCP_upstream['downtime'], nil, src)
+          metric('NGINX_PLUS_TCPUPSTREAM_PERC_FAILED', ratio(TCP_upstream['health_checks']['fails'], TCP_upstream['health_checks']['checks'])/(params.pollInterval/1000), nil, src)
+          metric('NGINX_PLUS_TCPUPSTREAM_HEALTHY', health_check, nil, src)
 
         -- tcpuup_failed_hc_event
-        if params.tcpup_failed_hc_event then
-          local health_check_change = acc('TCP_upstream_health_checks_' .. TCP_upstream_server_name, health_check)
-          if health_check_change ~= 0 then
-            local passed = TCP_upstream['health_checks']['last_passed'] and 'passed' or 'failed' 
-            local eventType = TCP_upstream['health_checks']['last_passed'] and 'info' or 'warn' 
-            self:emitEvent(eventType, 'TCP Upstream ' .. TCP_upstream_server_name .. (' Health Check %s'):format(passed), src, self.source, string.format('TCP upstream server %s %s its last health check', TCP_upstream_server_name, passed))
+          if params.tcpup_failed_hc_event then
+            local health_check_change = acc('TCP_upstream_health_checks_' .. TCP_upstream_server_name, health_check)
+            if health_check_change ~= 0 then
+              local passed = TCP_upstream['health_checks']['last_passed'] and 'passed' or 'failed' 
+              local eventType = TCP_upstream['health_checks']['last_passed'] and 'info' or 'warn' 
+              self:emitEvent(eventType, 'TCP Upstream ' .. TCP_upstream_server_name .. (' Health Check %s'):format(passed), src, self.source, string.format('TCP upstream server %s %s its last health check', TCP_upstream_server_name, passed))
+            end
           end
+          metric('NGINX_PLUS_TCPUPSTREAM_CONNECT_TIME', TCP_upstream['connect_time'], nil, src)
+          metric('NGINX_PLUS_TCPUPSTREAM_FIRST_BYTE_TIME', TCP_upstream['first_byte_time'], nil, src)
+          metric('NGINX_PLUS_TCPUPSTREAM_RESPONSE_TIME', TCP_upstream['response_time'], nil, src)
         end
-        metric('NGINX_PLUS_TCPUPSTREAM_CONNECT_TIME', TCP_upstream['connect_time'], nil, src)
-        metric('NGINX_PLUS_TCPUPSTREAM_FIRST_BYTE_TIME', TCP_upstream['first_byte_time'], nil, src)
-        metric('NGINX_PLUS_TCPUPSTREAM_RESPONSE_TIME', TCP_upstream['response_time'], nil, src)
+       end
       end
     end
-  end
 
-  return metrics 
+    return metrics 
 end
 --count number of elements  found in array
 function count( tbl )
@@ -259,8 +259,8 @@ function count( tbl )
   return count
 end
 --checking given string is empty
-function isBlank(x)
-  return not not tostring(x):find("^%s*$")
+function isBlank(zones)
+  return not not tostring(zones):find("^%s*$")
 end
 --Get list of zone values
 function getListOfZones(paramZones)
