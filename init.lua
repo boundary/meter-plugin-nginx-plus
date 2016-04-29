@@ -96,21 +96,7 @@ function plugin:onParseValues(data)
   -- Caches metrics
   --print("Cache Block Sstart here---------------------------")
   for cache_name, cache in pairs(stats.caches) do
-    
-    local listOfCacheZones = {}
-      local cacheZones = ""
-      for _,v in pairs(params.caches) do
-            cacheZones = v
-      end
-      if isBlank(cacheZones) then
-       --empty
-      else
-          local listOfCacheZoneArrays = cacheZones:split(",")
-          for i = 1, #listOfCacheZoneArrays do
-             listOfCacheZones[listOfCacheZoneArrays[i]] = listOfCacheZoneArrays[i]
-          end
-      end
-    if setContains(listOfCacheZones, cache_name) then
+    if setContains(getListOfZones(params.caches), cache_name) then
       local src = self.source .. '.' .. string.gsub(cache_name, ":", "_")
       local served = cache['hit']['bytes'] + cache['stale']['bytes'] + cache['updating']['bytes'] + cache['revalidated']['bytes']
       local bypassed = cache['miss']['bytes'] + cache['expired']['bytes'] + cache['bypass']['bytes']
@@ -140,20 +126,7 @@ function plugin:onParseValues(data)
 
   -- Server Zones metrics
   for zone_name, zone in pairs(stats.server_zones) do
-      local listOfZones = {}
-      local zones = ""
-      for _,v in pairs(params.zones) do
-            zones = v
-      end
-     if isBlank(zones) then
-       --empty 
-     else
-        local sepratedZonesArray = zones:split(",")
-        for i = 1, #sepratedZonesArray do
-               listOfZones[sepratedZonesArray[i]] = sepratedZonesArray[i]
-        end
-     end
-    if setContains(listOfZones, zone_name) then
+    if setContains(getListOfZones(params.zones), zone_name) then
       local src = self.source .. '.' .. string.gsub(zone_name, ":", "_")
       metric('NGINX_PLUS_ZONE_CURRENT_REQUESTS', zone['processing'], nil, src)
       metric('NGINX_PLUS_ZONE_REQUESTS', acc('zone_requests_' .. zone_name, zone['requests'])/(params.pollInterval/1000), nil, src)
@@ -221,20 +194,7 @@ function plugin:onParseValues(data)
 
   -- TCP Zones
   for TCP_zone_name, TCP_zone in pairs(stats.stream.server_zones) do
-    local listOfTCPZones = {}
-      local tcpZones = ""
-      for _,v in pairs(params.tcpzones) do
-            tcpZones = v
-      end
-     if isBlank(tcpZones) then
-       --empty
-     else
-          local tcpZoneArray = tcpZones:split(",")
-          for i = 1, #tcpZoneArray do
-              listOfTCPZones[tcpZoneArray[i]] = tcpZoneArray[i]
-          end
-     end
-    if setContains(listOfTCPZones, TCP_zone_name) then
+    if setContains(getListOfZones(params.tcpzones), TCP_zone_name) then
       local src = self.source .. '.' .. string.gsub(TCP_zone_name, ":", "_")
       metric('NGINX_PLUS_TCPZONE_CURRENT_CONNECTIONS', TCP_zone['processing'], nil, src)
       metric('NGINX_PLUS_TCPZONE_CONNECTIONS', acc('tcpzone_connections_' .. TCP_zone_name, TCP_zone['connections'])/(params.pollInterval/1000), nil, src)
@@ -302,6 +262,24 @@ end
 function isBlank(x)
   return not not tostring(x):find("^%s*$")
 end
+--Get list of zone values
+function getListOfZones(paramZones)
+  local listOfZones = {}
+      local zones = ""
+      for _,val in pairs(paramZones) do
+            zones = val
+      end
+     if isBlank(zones) then
+       --empty
+     else
+        local zoneArrays = zones:split(",")
+        for i = 1, #zoneArrays do
+             listOfZones[zoneArrays[i]] = zoneArrays[i]
+       end
+     end
+  return listOfZones
+end
+
 --Split string by comma
 function string:split( inSplitPattern, outResults )
   if not outResults then
