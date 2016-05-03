@@ -120,8 +120,6 @@ function plugin:onParseValues(data)
     end
   end
 
-
-
   -- Server Zones metrics
   for zone_name, zone in pairs(stats.server_zones) do
     if setContains(getListOfZones(params.zones), zone_name) then
@@ -139,54 +137,55 @@ function plugin:onParseValues(data)
     end
   end
 
-
   -- Upstreams metrics
-  for upstream_name, upstream_array in pairs(stats.upstreams) do
-    if setContains(self.upstreams_to_check, upstream_name) then
-      for _, upstream in pairs(upstream_array) do
-        local backup = upstream['backup'] and ".b_" or "."
-        local upstream_server_name = string.gsub(upstream_name, ":", "_") .. backup .. string.gsub(upstream['server'], ":", "_")
-        local src = self.source .. '.' .. upstream_server_name
+  for upstream_name, upstream  in pairs(stats.upstreams) do
+    if setContains(getListOfZones(params.upstreams), upstream_name) then
+       arraySize = count(upstream)  
+       for index=1,arraySize  do
+             local backup = upstream['peers'][index]['backup'] and ".b_" or "."
+             local upstream_server_name = string.gsub(upstream_name, ":", "_") .. backup .. string.gsub(upstream['peers'][index]['server'], ":", "_")
+             local src = self.source .. '.' .. upstream_server_name
 
-        local state = (upstream['state'] == 'up' and 0) or (upstream['state'] == 'draining' and 1) or (upstream['state'] == 'down' and 2) or (upstream['state'] == 'unavail' and 3) or (upstream['state'] == 'unhealthy' and 4) or 5
-        local health_check = upstream['health_checks']['last_passed'] and 1 or 0
-        metric('NGINX_PLUS_UPSTREAM_STATE', state, nil, src)
+             local state = (upstream['peers'][index]['state'] == 'up' and 0) or (upstream['peers'][index]['state'] == 'draining' and 1) or (upstream['peers'][index]['state'] == 'down' and 2) or (upstream['state'] == 'unavail' and 3) or (upstream['state'] == 'unhealthy' and 4) or 5
+            local health_check = upstream['peers'][index]['health_checks']['last_passed'] and 1 or 0
+            metric('NGINX_PLUS_UPSTREAM_STATE', state, nil, src)
 
         -- Upstream state change event
-        if params.upstream_state_event then
-          local state_change = acc('upstream_states_' .. upstream_server_name, state)
-          if state_change ~= 0 then
-            local eventType = state_to_event_map[upstream['state']] or 'error'
-            self:emitEvent(eventType, 'Upstream ' .. upstream_server_name .. ' ' .. upstream['state'], src, self.source, string.format('Upstream server %s is now %s', upstream_server_name, upstream['state']))
-          end
-        end
-        metric('NGINX_PLUS_UPSTREAM_REQUESTS', acc('upstream_requests_' .. upstream_name, upstream['requests'])/(params.pollInterval/1000), nil, src)
-        metric('NGINX_PLUS_UPSTREAM_1XX_RESPONSES', acc('upstream_1xx_responses_' .. upstream_server_name, upstream['responses']['1xx'])/(params.pollInterval/1000), nil, src)
-        metric('NGINX_PLUS_UPSTREAM_2XX_RESPONSES', acc('upstream_2xx_responses_' .. upstream_server_name, upstream['responses']['2xx'])/(params.pollInterval/1000), nil, src)
-        metric('NGINX_PLUS_UPSTREAM_3XX_RESPONSES', acc('upstream_3xx_responses_' .. upstream_server_name, upstream['responses']['3xx'])/(params.pollInterval/1000), nil, src)
-        metric('NGINX_PLUS_UPSTREAM_4XX_RESPONSES', acc('upstream_4xx_responses_' .. upstream_server_name, upstream['responses']['4xx'])/(params.pollInterval/1000), nil, src)
-        metric('NGINX_PLUS_UPSTREAM_5XX_RESPONSES', acc('upstream_5xx_responses_' .. upstream_server_name, upstream['responses']['5xx'])/(params.pollInterval/1000), nil, src)
-        metric('NGINX_PLUS_UPSTREAM_TOTAL_RESPONSES', acc('upstream_total_responses_' .. upstream_server_name, upstream['responses']['total'])/(params.pollInterval/1000), nil, src)
-        metric('NGINX_PLUS_UPSTREAM_ACTIVE_CONNECTIONS', upstream['active'], nil, src)
-        metric('NGINX_PLUS_UPSTREAM_PERC_USED_CONNECTIONS', ratio(upstream['active'], upstream['max_conns']), nil, src)
-        metric('NGINX_PLUS_UPSTREAM_TRAFFIC_SENT', acc('upstream_traffic_sent_' .. upstream_server_name, upstream['sent'])/(params.pollInterval/1000), nil, src)
-        metric('NGINX_PLUS_UPSTREAM_TRAFFIC_RECEIVED', acc('upstream_traffic_received_' .. upstream_server_name, upstream['received'])/(params.pollInterval/1000), nil, src)
-        metric('NGINX_PLUS_UPSTREAM_FAILED_CHECKS', upstream['fails'], nil, src)
-        metric('NGINX_PLUS_UPSTREAM_DOWNTIME', upstream['downtime'], nil, src)
-        metric('NGINX_PLUS_UPSTREAM_PERC_FAILED', ratio(upstream['health_checks']['fails']/upstream['health_checks']['checks']), nil, src)
-        metric('NGINX_PLUS_UPSTREAM_HEALTHY', health_check, nil, src)
+            if params.upstream_state_event then
+               local state_change = acc('upstream_states_' .. upstream_server_name, state)
+               if state_change ~= 0 then
+                 local eventType = state_to_event_map[upstream['peers'][index]['state']] or 'error'
+                 self:emitEvent(eventType, 'Upstream ' .. upstream_server_name .. ' ' .. upstream['peers'][index]['state'], src, self.source, string.format('Upstream server %s is now %s', upstream_server_name, upstream['peers'][index]['state']))
+               end
+             end
+             metric('NGINX_PLUS_UPSTREAM_REQUESTS', acc('upstream_requests_' .. upstream_name, upstream['peers'][index]['requests'])/(params.pollInterval/1000), nil, src)
+             metric('NGINX_PLUS_UPSTREAM_1XX_RESPONSES', acc('upstream_1xx_responses_' .. upstream_server_name, upstream['peers'][index]['responses']['1xx'])/(params.pollInterval/1000), nil, src)
+             metric('NGINX_PLUS_UPSTREAM_2XX_RESPONSES', acc('upstream_2xx_responses_' .. upstream_server_name, upstream['peers'][index]['responses']['2xx'])/(params.pollInterval/1000), nil, src)
+             metric('NGINX_PLUS_UPSTREAM_3XX_RESPONSES', acc('upstream_3xx_responses_' .. upstream_server_name, upstream['peers'][index]['responses']['3xx'])/(params.pollInterval/1000), nil, src)
+             metric('NGINX_PLUS_UPSTREAM_4XX_RESPONSES', acc('upstream_4xx_responses_' .. upstream_server_name, upstream['peers'][index]['responses']['4xx'])/(params.pollInterval/1000), nil, src)
+             metric('NGINX_PLUS_UPSTREAM_5XX_RESPONSES', acc('upstream_5xx_responses_' .. upstream_server_name, upstream['peers'][index]['responses']['5xx'])/(params.pollInterval/1000), nil, src)
+             metric('NGINX_PLUS_UPSTREAM_TOTAL_RESPONSES', acc('upstream_total_responses_' .. upstream_server_name, upstream['peers'][index]['responses']['total'])/(params.pollInterval/1000), nil, src)
+             metric('NGINX_PLUS_UPSTREAM_ACTIVE_CONNECTIONS', upstream['peers'][index]['active'], nil, src)
+             metric('NGINX_PLUS_UPSTREAM_PERC_USED_CONNECTIONS', ratio(upstream['peers'][index]['active'], upstream['peers'][index]['max_conns']), nil, src)
+             metric('NGINX_PLUS_UPSTREAM_TRAFFIC_SENT', acc('upstream_traffic_sent_' .. upstream_server_name, upstream['peers'][index]['sent'])/(params.pollInterval/1000), nil, src)
+             metric('NGINX_PLUS_UPSTREAM_TRAFFIC_RECEIVED', acc('upstream_traffic_received_' .. upstream_server_name, upstream['peers'][index]['received'])/(params.pollInterval/1000), nil, src)
+             metric('NGINX_PLUS_UPSTREAM_FAILED_CHECKS', upstream['peers'][index]['fails'], nil, src)
+             metric('NGINX_PLUS_UPSTREAM_DOWNTIME', upstream['peers'][index]['downtime'], nil, src)
+             metric('NGINX_PLUS_UPSTREAM_PERC_FAILED', ratio(upstream['peers'][index]['health_checks']['fails']/upstream['peers'][index]['health_checks']['checks']), nil, src)
+             metric('NGINX_PLUS_UPSTREAM_HEALTHY', health_check, nil, src)
 
         -- Upstream failed health check event
-        if params.upstream_failed_hc_event then
-          local health_check_change = acc('upstream_health_checks_' .. upstream_server_name, health_check)
-          if health_check_change ~= 0 then
-            local passed =  upstream['health_checks']['last_passed'] and 'passed' or 'failed'
-            local eventType = upstream['health_checks']['last_passed'] and 'info' or 'warn'
-            self:emitEvent(eventType, 'Upstream ' .. upstream_server_name .. (' Health Check %s'):format(passed), src, self.source, ('Upstream server %s %s its last health check'):format(upstream_server_name, passed))
-          end
-        end
-      end
-    end
+             if params.upstream_failed_hc_event then
+               local health_check_change = acc('upstream_health_checks_' .. upstream_server_name, health_check)
+               if health_check_change ~= 0 then
+                 local passed =  upstream['peers'][index]['health_checks']['last_passed'] and 'passed' or 'failed'
+                 local eventType = upstream['peers'][index]['health_checks']['last_passed'] and 'info' or 'warn'
+                 self:emitEvent(eventType, 'Upstream ' .. upstream_server_name .. (' Health Check %s'):format(passed), src, self.source, ('Upstream server %s %s its last health check'):format(upstream_server_name, passed))
+               end
+             end
+           end
+       --end
+     end
   end
 
   -- TCP Zones
@@ -200,7 +199,6 @@ function plugin:onParseValues(data)
     end
   end
 
-  
   -- TCP Upstream
   for TCP_upstream_name, TCP_upstream_array in pairs(stats.stream.upstreams) do
     if setContains(getListOfZones(params.tcpupstreams), TCP_upstream_name) then
@@ -250,6 +248,7 @@ function plugin:onParseValues(data)
 
     return metrics 
 end
+
 --count number of elements  found in array
 function count( tbl )
   local count = 0
