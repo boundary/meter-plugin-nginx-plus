@@ -137,11 +137,12 @@ function plugin:onParseValues(data)
     end
   end
 
-  -- Upstreams metrics
+ -- Upstreams metrics
   for upstream_name, upstream  in pairs(stats.upstreams) do
     if setContains(getListOfZones(params.upstreams), upstream_name) then
-       arraySize = count(upstream)  
-       for index=1,arraySize  do
+       arraySize = count(upstream['peers']) 
+           
+       for index=1, arraySize  do                       
              local backup = upstream['peers'][index]['backup'] and ".b_" or "."
              local upstream_server_name = string.gsub(upstream_name, ":", "_") .. backup .. string.gsub(upstream['peers'][index]['server'], ":", "_")
              local src = self.source .. '.' .. upstream_server_name
@@ -254,9 +255,10 @@ function count( tbl )
   local count = 0
   for _ in pairs( tbl ) do
     count = count + 1
-    end
+  end
   return count
 end
+
 --checking given string is empty
 function isBlank(zones)
   return not not tostring(zones):find("^%s*$")
