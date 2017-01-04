@@ -1,6 +1,6 @@
-# Boundary Nginx Plus Plugin
+# TrueSight Pulse Nginx Plus Plugin
 
-A Boundary plugin that collects metrics from an Nginx Plus instance. This plugin is not intended for the Nginx F/OSS edition as fewer metrics are available there.
+A Nginx plugin that collects metrics from an Nginx Plus instance. This plugin is not intended for the Nginx F/OSS edition as fewer metrics are available there.
 
 ### Prerequisites
 
