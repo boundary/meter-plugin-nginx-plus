@@ -26,11 +26,6 @@ local ratio = framework.util.ratio
 local params = framework.params or {}
 
 local function setContains(set, key)
-  --if set then
-   -- return set[key] ~= nil
-  --else
-   -- return true
-  --end
   if count(set) == 0 then
      return true
   end
